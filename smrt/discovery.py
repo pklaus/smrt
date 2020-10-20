@@ -57,8 +57,6 @@ def discover_switches(interfaces='all'):
         ss.sendto(packet, (BROADCAST_ADDR, UDP_SEND_TO_PORT))
         ss.close()
 
-
-
         while True:
             try:
                 data, addr = rs.recvfrom(1500)
@@ -78,7 +76,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('interfaces', metavar='INTERFACE', nargs='*', default='all')
     args = parser.parse_args()
-    logging.basicConfig(level=logging.WARNING)
+    # logging.basicConfig(level=logging.WARNING)
     switches = discover_switches(interfaces=args.interfaces)
     for context, header, payload in switches:
         get = lambda kind: get_payload_item_value(payload, kind)
