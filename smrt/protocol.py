@@ -88,8 +88,9 @@ receive_ids = {
     4608:  ['5s', 'hex',   'port_trunk'],
     8192:  ['2s', 'hex',   'mtu_vlan'],
     8704:  ['?',  'hex',   '802.1q vlan enabled'],
-    8705:  ['*s', 'hex',   '802.1q vlan'],
-    8706:  ['*s', 'hex',   '802.1q vlan pvid'],
+    8705:  ['*s', 'vlan',   '802.1q vlan'],
+    8706:  ['*s', 'pvid',   '802.1q vlan pvid'],
+    8707:  ['*s', 'str',   '802.1q vlan filler'],
     12288: ['?',  'bool',  'QoS Basic 1'],
     12289: ['2s', 'hex',   'QoS Basic 2'],
     16640: ['10s','hex',   'port_mirror'],
@@ -205,6 +206,10 @@ def interpret_value(value, kind):
         value = "n/a"
     elif kind == 'dec':
         value = int(''.join('%02X' % byte for byte in value), 16)
+    elif kind == 'vlan':
+        value = (int(value[1]), bin(value[5]), bin(value[9]), bin(value[5] & ~value[9]), value[10:-1].decode('ascii'))
+    elif kind == 'pvid':
+        value = (int(value[0]), int(value[2]))
     elif kind == 'bool':
         if   len(value) == 0: pass
         elif len(value) == 1: value = value[0] > 0
@@ -220,7 +225,7 @@ def get_payload_item_context(items, name_key):
     raw_value = hits[0][1]
     value = interpret_value(raw_value, kind)
 
-    return {
+    ret = {
       'id': item_id,
       'struct_fmt': receive_ids[item_id][0],
       'kind': kind,
@@ -228,6 +233,11 @@ def get_payload_item_context(items, name_key):
       'value': value,
       'raw_value': raw_value,
     }
+    print("R", ret)
+    return ret
+
+def decode_payload(payload_list):
+    return [(receive_ids[x[0]][2], interpret_value(x[1], receive_ids[x[0]][1])) for x in payload_list]
 
 def get_payload_item_value(items, name_key):
     context = get_payload_item_context(items, name_key)

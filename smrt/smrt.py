@@ -47,7 +47,7 @@ def main():
     #elif args.action == 'pvid':
     #    header, payload = sc.query(GET, {8706: b''})
     header, payload = sc.query(GET, {int(args.action): b''})
-    print(payload)
+    print(*decode_payload(payload), sep="\n")
 
 if __name__ == "__main__":
     main()
