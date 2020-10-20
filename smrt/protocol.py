@@ -212,12 +212,12 @@ def interpret_value(value, kind):
     return value
 
 def get_payload_item_context(items, name_key):
-    hits = [key for key in items.keys() if receive_ids[key][2] == name_key]
+    hits = [x for x in items if receive_ids[x[0]][2] == name_key]
     assert len(hits) == 1
-    item_id = hits[0]
+    item_id = hits[0][0]
 
     kind = receive_ids[item_id][1]
-    raw_value = items[item_id]
+    raw_value = hits[0][1]
     value = interpret_value(raw_value, kind)
 
     return {
