@@ -38,8 +38,8 @@ def main():
     if args.action == 'query_port_mirror':
         header, payload = sc.query(GET, query_port_mirror_payload())
         print(payload[16640])
-    #elif args.action == 'status':
-    #    header, payload = sc.query(GET, query_port_mirror_payload())
+    elif args.action == 'status':
+        header, payload = sc.query(GET, {4096: b''})
 
 if __name__ == "__main__":
     main()
