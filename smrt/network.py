@@ -39,7 +39,7 @@ class SwitchConversation(object):
         ss = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         ss.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         ss.bind((ip_address, UDP_RECEIVE_FROM_PORT))
-    
+
         # Receiving socket
         rs = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         rs.bind((BROADCAST_ADDR, UDP_RECEIVE_FROM_PORT))
@@ -65,23 +65,18 @@ class SwitchConversation(object):
 
     def receive(self):
         try:
-            fragment_offset = 1
-            total_payload = b''
-            while fragment_offset:
-                data, addr = self.rs.recvfrom(1500)
-                data = decode(data)
-                header, payload = split(data)
-                header, payload = interpret_header(header), interpret_payload(payload)
-                fragment_offset = header['fragment_offset']
-                logger.debug('Received Header:  ' + str(header))
-                logger.debug('Received Payload: ' + str(payload))
-                self.header['token_id'] = header['token_id']
-                total_payload += payload
+            data, addr = self.rs.recvfrom(1500)
+            data = decode(data)
+            header, payload = split(data)
+            header, payload = interpret_header(header), interpret_payload(payload)
+            logger.debug('Received Header:  ' + str(header))
+            logger.debug('Received Payload: ' + str(payload))
+            self.header['token_id'] = header['token_id']
             return header, payload
         except:
-                print("no response")
-                raise ConnectionProblem()
-                return {}, {}
+            print("no response")
+            raise ConnectionProblem()
+            return {}, {}
 
     def query(self, op_code, payload):
         self.send(op_code, payload)
