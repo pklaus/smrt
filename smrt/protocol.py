@@ -176,12 +176,12 @@ def interpret_header(header):
     return dict(zip(names, vals))
 
 def interpret_payload(payload):
-    results = OrderedDict()
+    results = []
     while len(payload) > len(PACKET_END):
         dtype, dlen = struct.unpack('!hh', payload[0:4])
         data = payload[4:4+dlen]
         payload = payload[4+dlen:]
-        results[dtype] = data
+        results.append( (dtype, data) )
     return results
 
 def assemble_packet(header, payload):
