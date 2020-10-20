@@ -35,11 +35,19 @@ def main():
 
     sc.login(args.username, args.password)
 
-    if args.action == 'query_port_mirror':
-        header, payload = sc.query(GET, query_port_mirror_payload())
-        print(payload[16640])
-    elif args.action == 'status':
-        header, payload = sc.query(GET, {4096: b''})
+    #if args.action == 'query_port_mirror':
+    #    header, payload = sc.query(GET, query_port_mirror_payload())
+    #    print(payload[16640])
+    #elif args.action == 'stat':
+    #    header, payload = sc.query(GET, {4096: b''})
+    #elif args.action == 'vlan':
+    #    header, payload = sc.query(GET, {8707: b''})
+    #elif args.action == 'vlans':
+    #    header, payload = sc.query(GET, {8705: b''})
+    #elif args.action == 'pvid':
+    #    header, payload = sc.query(GET, {8706: b''})
+    header, payload = sc.query(GET, {int(args.action): b''})
+    print(payload)
 
 if __name__ == "__main__":
     main()
