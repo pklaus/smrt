@@ -78,6 +78,7 @@ receive_ids = {
     8:     ['*s', 'str',   'hardware_version'],
     9:     ['?',  'bool',  'dhcp'],
     10:    ['b',  'dec',   'num_ports'],
+    13:    ['?',  'bool',  'v4'],
     512:   ['*s', 'str',   'username'],
     514:   ['*s', 'str',   'password'],
     2304:  ['a',  'action','save'],
