@@ -45,7 +45,7 @@ class Protocol:
     'discover':     (DISCOVERY, SET),
     }
 
-    receive_ids = {
+    tp_ids = {
         1:     ['*s', 'str',   'type'],
         2:     ['*s', 'str',   'hostname'],
         3:     ['6s', 'hex',   'mac'],
@@ -76,7 +76,7 @@ class Protocol:
         17152: ['?',  'bool',  'loop_prevention'],
     }
 
-    ids = {v[2]: k for k, v in receive_ids.items()}
+    ids = {v[2]: k for k, v in tp_ids.items()}
 
     def get_sequence_kind(sequence):
         for key, value in Protocol.sequences.items():
@@ -99,15 +99,15 @@ class Protocol:
         for item_id in items.keys():
             value = items[item_id]
             try:
-                value = interpret_value(value, receive_ids[item_id][1])
+                value = interpret_value(value, tp_ids[item_id][1])
             except:
                 pass
-            if item_id not in receive_ids:
+            if item_id not in tp_ids:
                 ret += 'Unknown code: %s (content: %s)\n' % (item_id, value)
                 continue
-            struct_fmt = receive_ids[item_id][0]
-            kind = receive_ids[item_id][1]
-            name = receive_ids[item_id][2]
+            struct_fmt = tp_ids[item_id][0]
+            kind = tp_ids[item_id][1]
+            name = tp_ids[item_id][2]
             fmt = '{name}: {value}  (id: {id}, kind: {kind})\n'
             ret += fmt.format(name=name, value=value, id=item_id, kind=kind)
         return ret
@@ -161,7 +161,7 @@ class Protocol:
             payload = payload[4+dlen:]
             results.append( (
                 dtype,
-                Protocol.interpret_value(data, Protocol.receive_ids[dtype][1])
+                Protocol.interpret_value(data, Protocol.tp_ids[dtype][1])
                 )
             )
         return results
@@ -196,32 +196,6 @@ class Protocol:
             elif len(value) == 1: value = value[0] > 0
             else: raise AssertionError('boolean should be one byte long')
         return value
-
-    def get_payload_item_context(items, name_key):
-        hits = [x for x in items if Protocol.receive_ids[x[0]][2] == name_key]
-        assert len(hits) == 1
-        item_id = hits[0][0]
-
-        kind = Protocol.receive_ids[item_id][1]
-        raw_value = hits[0][1]
-        value = Protocol.interpret_value(raw_value, kind)
-
-        ret = {
-            'id': item_id,
-            'struct_fmt': Protocol.receive_ids[item_id][0],
-            'kind': kind,
-            'name': Protocol.receive_ids[item_id][2],
-            'value': value,
-            'raw_value': raw_value,
-        }
-        return ret
-
-    def decode_payload(payload_list):
-        return [(Protocol.receive_ids[x[0]][2], Protocol.interpret_value(x[1], Protocol.receive_ids[x[0]][1])) for x in payload_list]
-
-    def get_payload_item_value(items, name_key):
-        context = Protocol.get_payload_item_context(items, name_key)
-        return context['value']
 
     def login_payload(username, password):
         username = username.encode('ascii') + b'\x00'
