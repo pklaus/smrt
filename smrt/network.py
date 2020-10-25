@@ -85,6 +85,10 @@ class Network:
         return header, payload
 
     def login(self, username, password):
-        self.query(Protocol.GET, Protocol.get_dict_id("get_token_id"))
-        self.query(Protocol.LOGIN, Protocol.login_payload(username, password))
-
+        self.query(Protocol.GET, {Protocol.get_id("get_token_id"): b''})
+        username = username.encode('ascii') + b'\x00'
+        password = password.encode('ascii') + b'\x00'
+        self.query(
+                Protocol.LOGIN,
+                {Protocol.get_id('username'): username, Protocol.get_id('password'): password}
+        )

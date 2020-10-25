@@ -72,11 +72,13 @@ def main():
     # logging.basicConfig(level=logging.WARNING)
     switches = discover_switches(interfaces=args.interfaces)
     for context, header, payload in switches:
-        print(context, header, payload)
+        #print(context, header, payload)
         #get = lambda kind: Protocol.get_payload_item_value(payload, kind)
         #fmt =  "Found a switch:  Host:   (Interface: {iface:8s} IP: {host_ip}  Broadcast: {broadcast})\n"
         #fmt += "                 Switch: (Kind: {kind:12s}  MAC Address: {mac}   IP Address: {switch_ip})"
         #print(fmt.format(iface=context['iface'], host_ip=context['ip'], broadcast=context['broadcast'],
         #                 kind=get('type'), mac=get('mac'), switch_ip=get('ip_addr')))
+        print(*payload, sep="\n")
+        print("-"*16)
 
 if __name__ == "__main__": main()

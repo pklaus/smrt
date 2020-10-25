@@ -86,32 +86,6 @@ class Protocol:
     def get_id(name):
         return Protocol.ids[name]
 
-    def hex_readable(bts):
-        return ':'.join(['{:02X}'.format(byte) for byte in bts])
-
-    def payload_str(payload):
-        ret = ''
-        if type(payload) == bytes:
-            items = interpret_payload(payload)
-        else:
-            items = payload
-
-        for item_id in items.keys():
-            value = items[item_id]
-            try:
-                value = interpret_value(value, tp_ids[item_id][1])
-            except:
-                pass
-            if item_id not in tp_ids:
-                ret += 'Unknown code: %s (content: %s)\n' % (item_id, value)
-                continue
-            struct_fmt = tp_ids[item_id][0]
-            kind = tp_ids[item_id][1]
-            name = tp_ids[item_id][2]
-            fmt = '{name}: {value}  (id: {id}, kind: {kind})\n'
-            ret += fmt.format(name=name, value=value, id=item_id, kind=kind)
-        return ret
-
     def decode(data):
         data = list(data)
         key = [ 191, 155, 227, 202, 99, 162, 79, 104, 49, 18, 190, 164, 30,
@@ -158,13 +132,13 @@ class Protocol:
         while len(payload) > len(Protocol.PACKET_END):
             dtype, dlen = struct.unpack('!hh', payload[0:4])
             data = payload[4:4+dlen]
-            payload = payload[4+dlen:]
             results.append( (
                 dtype,
                 data.hex(sep=" "),
                 Protocol.interpret_value(data, Protocol.tp_ids[dtype][1])
                 )
             )
+            payload = payload[4+dlen:]
         return results
 
     def assemble_packet(header, payload):
@@ -200,10 +174,3 @@ class Protocol:
             else: raise AssertionError('boolean should be one byte long')
         return value
 
-    def login_payload(username, password):
-        username = username.encode('ascii') + b'\x00'
-        password = password.encode('ascii') + b'\x00'
-        return {Protocol.get_id('username'): username, Protocol.get_id('password'): password}
-
-    def get_dict_id(name):
-        return {Protocol.get_id(name): b''}
