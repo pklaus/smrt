@@ -5,8 +5,8 @@ import sys, socket, random, logging, platform, argparse
 import netifaces
 
 from . import IncompatiblePlatformException
-from .protocol import *
-from .network import *
+from .protocol import Protocol
+from .network import Network
 
 DISCOVERY_TIMEOUT = 0.5
 
@@ -29,22 +29,22 @@ def discover_switches(interfaces='all'):
     for iface, ip, mac, broadcast in settings:
         logger.warning((iface, ip, mac, broadcast))
         sequence_id = random.randint(0, 1000)
-        header = DEFAULT_HEADER.copy()
+        header = Protocol.header["blank"].copy()
         header.update({
           'sequence_id': sequence_id,
           'host_mac': bytes(int(byte, 16) for byte in mac.split(':')),
         })
-        packet = assemble_packet(header, {})
-        packet = encode(packet)
+        packet = Protocol.assemble_packet(header, {})
+        packet = Protocol.encode(packet)
 
         if platform.system().lower() == 'darwin':
             rs = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             rs.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            rs.bind(('', UDP_RECEIVE_FROM_PORT))
+            rs.bind(('', Network.UDP_RECEIVE_FROM_PORT))
             rs.settimeout(DISCOVERY_TIMEOUT)
         elif platform.system().lower() == 'linux':
             rs = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            rs.bind((BROADCAST_ADDR, UDP_RECEIVE_FROM_PORT))
+            rs.bind((Network.BROADCAST_ADDR, Network.UDP_RECEIVE_FROM_PORT))
             #rs.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
             rs.settimeout(DISCOVERY_TIMEOUT)
         else:
@@ -53,8 +53,8 @@ def discover_switches(interfaces='all'):
         ss = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         ss.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         ss.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        ss.bind((ip, UDP_RECEIVE_FROM_PORT))
-        ss.sendto(packet, (BROADCAST_ADDR, UDP_SEND_TO_PORT))
+        ss.bind((ip, Network.UDP_RECEIVE_FROM_PORT))
+        ss.sendto(packet, (Network.BROADCAST_ADDR, Network.UDP_SEND_TO_PORT))
         ss.close()
 
         while True:
@@ -62,9 +62,9 @@ def discover_switches(interfaces='all'):
                 data, addr = rs.recvfrom(1500)
             except:
                 break
-            data = decode(data)
-            header, payload = split(data)
-            payload = interpret_payload(payload)
+            data = Protocol.decode(data)
+            header, payload = Protocol.split(data)
+            payload = Protocol.interpret_payload(payload)
             context = {'iface': iface, 'ip': ip, 'mac': mac, 'broadcast': broadcast}
             yield context, header, payload
         rs.close()
@@ -79,7 +79,7 @@ def main():
     # logging.basicConfig(level=logging.WARNING)
     switches = discover_switches(interfaces=args.interfaces)
     for context, header, payload in switches:
-        get = lambda kind: get_payload_item_value(payload, kind)
+        get = lambda kind: Protocol.get_payload_item_value(payload, kind)
         fmt =  "Found a switch:  Host:   (Interface: {iface:8s} IP: {host_ip}  Broadcast: {broadcast})\n"
         fmt += "                 Switch: (Kind: {kind:12s}  MAC Address: {mac}   IP Address: {switch_ip})"
         print(fmt.format(iface=context['iface'], host_ip=context['ip'], broadcast=context['broadcast'],

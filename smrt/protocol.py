@@ -194,23 +194,22 @@ class Protocol:
         return value
 
     def get_payload_item_context(items, name_key):
-        hits = [x for x in items if receive_ids[x[0]][2] == name_key]
+        hits = [x for x in items if Protocol.receive_ids[x[0]][2] == name_key]
         assert len(hits) == 1
         item_id = hits[0][0]
 
-        kind = receive_ids[item_id][1]
+        kind = Protocol.receive_ids[item_id][1]
         raw_value = hits[0][1]
-        value = interpret_value(raw_value, kind)
+        value = Protocol.interpret_value(raw_value, kind)
 
         ret = {
-        'id': item_id,
-        'struct_fmt': receive_ids[item_id][0],
-        'kind': kind,
-        'name': receive_ids[item_id][2],
-        'value': value,
-        'raw_value': raw_value,
+            'id': item_id,
+            'struct_fmt': Protocol.receive_ids[item_id][0],
+            'kind': kind,
+            'name': Protocol.receive_ids[item_id][2],
+            'value': value,
+            'raw_value': raw_value,
         }
-        # print("R", ret)
         return ret
 
     def decode_payload(payload_list):
