@@ -1,9 +1,5 @@
 """
-TP-Link TL-SG105E and TL-SG108E switces
-UDP configuration protocol
-
-Wireshark filter:
-ip.addr ==192.168.178.250 || ip.addr ==192.168.178.254 && udp.port == 29808
+TP-Link TL-SG105E and TL-SG108E switches
 """
 
 import struct
@@ -88,8 +84,8 @@ receive_ids = {
     4608:  ['5s', 'hex',   'port_trunk'],
     8192:  ['2s', 'hex',   'mtu_vlan'],
     8704:  ['?',  'hex',   '802.1q vlan enabled'],
-    8705:  ['*s', 'vlan',   '802.1q vlan'],
-    8706:  ['*s', 'pvid',   '802.1q vlan pvid'],
+    8705:  ['*s', 'vlan',  '802.1q vlan'],
+    8706:  ['*s', 'pvid',  '802.1q vlan pvid'],
     8707:  ['*s', 'str',   '802.1q vlan filler'],
     12288: ['?',  'bool',  'QoS Basic 1'],
     12289: ['2s', 'hex',   'QoS Basic 2'],
@@ -98,15 +94,15 @@ receive_ids = {
     17152: ['?',  'bool',  'loop_prevention'],
 }
 
+ids = {v[2]: k for k, v in receive_ids.items()}
+
 def get_sequence_kind(sequence):
     for key, value in sequences.items():
         if value == sequence: return key
     return 'unknown'
 
 def get_id(name):
-    for key, value in receive_ids.items():
-        if value[2] == name: return key
-    raise Exception()
+    return ids[name]
 
 def hex_readable(bts):
     return ':'.join(['{:02X}'.format(byte) for byte in bts])
@@ -117,6 +113,7 @@ def payload_str(payload):
         items = interpret_payload(payload)
     else:
         items = payload
+
     for item_id in items.keys():
         value = items[item_id]
         try:
@@ -153,15 +150,13 @@ def decode(data):
       65, 154, 141, 122, 34, 140, 128, 238, 88, 89, 9, 146, 171, 149, 53,
       102, 61, 114, 69, 217, 175, 103, 228, 35, 180, 252, 200, 192, 165,
       159, 221, 244, 110, 119, 48]
-    length = len(data)
-    #s = [bytes([char]) for char in key]
     s = key
-    i, j = 0, 0
-    for k in range(length):
-        i = (k + 1) % 256;
-        j = (j + s[i]) % 256;
+    j = 0
+    for k in range(len(data)):
+        i = (k + 1) & 255
+        j = (j + s[i]) & 255
         s[i], s[j] = s[j], s[i]
-        data[k] = data[k] ^ s[(s[i] + s[j]) % 256];
+        data[k] = data[k] ^ s[(s[i] + s[j]) & 255]
     return bytes(data)
 
 encode = decode
@@ -233,7 +228,7 @@ def get_payload_item_context(items, name_key):
       'value': value,
       'raw_value': raw_value,
     }
-    print("R", ret)
+    # print("R", ret)
     return ret
 
 def decode_payload(payload_list):

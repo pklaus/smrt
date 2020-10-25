@@ -1,8 +1,4 @@
-
-from .protocol import *
-
-def query_port_mirror_payload():
-    return { get_id('port_mirror'): b'' }
+from .protocol import get_id
 
 def login_payload(username, password):
     username = username.encode('utf-8') + b'\x00'
