@@ -20,7 +20,7 @@ class Network:
 
         self.sequence_id = random.randint(0, 1000)
 
-        header = Protocol.DEFAULT_HEADER.copy()
+        header = Protocol.header["blank"].copy()
         header.update({
           'sequence_id': self.sequence_id,
           'host_mac':   Network.mac_to_bytes(host_mac),

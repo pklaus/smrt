@@ -1,45 +1,25 @@
-"""
-TP-Link TL-SG105E and TL-SG108E switches
-"""
-
 import struct
 from ipaddress import ip_address
-from collections import OrderedDict
 
 class Protocol:
-
-    HEADER_LEN = 32
     PACKET_END = b'\xff\xff\x00\x00'
 
-    DEFAULT_HEADER = {
-    'fragment_offset': 0,
-    'sequence_id': 0,
-    'checksum': 0,
-    'switch_mac': b'\x00\x00\x00\x00\x00\x00',
-    'check_length': 0,
-    'token_id': 0,
-    'op_code': 0,
-    'error_code': 0,
-    'host_mac':   b'\x00\x00\x00\x00\x00\x00',
-    'version': 1,
-    'flag': 0
-    }
-
-    header_structure = {
-    'fmt': '!bb6s6shihhhhi',
-    'designators': [
-        'version',
-        'op_code',
-        'switch_mac',
-        'host_mac',
-        'sequence_id',
-        'error_code',
-        'check_length',
-        'fragment_offset',
-        'flag',
-        'token_id',
-        'checksum',
-    ]
+    header = {
+        "len": 32,
+        "fmt": '!bb6s6shihhhhi',
+        "blank": {
+            'version': 1,
+            'op_code': 0,
+            'switch_mac': b'\x00\x00\x00\x00\x00\x00',
+            'host_mac':   b'\x00\x00\x00\x00\x00\x00',
+            'sequence_id': 0,
+            'error_code': 0,
+            'check_length': 0,
+            'fragment_offset': 0,
+            'flag': 0,
+            'token_id': 0,
+            'checksum': 0,
+        }
     }
 
     DISCOVERY = 0
@@ -164,13 +144,13 @@ class Protocol:
     encode = decode
 
     def split(data):
-        assert len(data) >= Protocol.HEADER_LEN + len(Protocol.PACKET_END)
+        assert len(data) >= Protocol.header["len"] + len(Protocol.PACKET_END)
         assert data.endswith(Protocol.PACKET_END)
-        return (data[0:Protocol.HEADER_LEN], data[Protocol.HEADER_LEN:])
+        return (data[0:Protocol.header["len"]], data[Protocol.header["len"]:])
 
     def interpret_header(header):
-        names = Protocol.header_structure['designators']
-        vals = struct.unpack(Protocol.header_structure['fmt'], header)
+        names = Protocol.header['blank'].keys()
+        vals = struct.unpack(Protocol.header['fmt'], header)
         return dict(zip(names, vals))
 
     def interpret_payload(payload):
@@ -187,9 +167,9 @@ class Protocol:
         for dtype, value in payload.items():
             payload_bytes += struct.pack('!hh', dtype, len(value))
             payload_bytes += value
-        header['check_length'] = Protocol.HEADER_LEN + len(payload_bytes) + len(Protocol.PACKET_END)
-        header = tuple(header[part] for part in Protocol.header_structure['designators'])
-        header_bytes = struct.pack(Protocol.header_structure['fmt'], *header)
+        header['check_length'] = Protocol.header["len"] + len(payload_bytes) + len(Protocol.PACKET_END)
+        header = tuple(header[part] for part in Protocol.header['blank'].keys())
+        header_bytes = struct.pack(Protocol.header['fmt'], *header)
         return header_bytes + payload_bytes + Protocol.PACKET_END
 
     def interpret_value(value, kind):
