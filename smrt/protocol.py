@@ -159,7 +159,11 @@ class Protocol:
             dtype, dlen = struct.unpack('!hh', payload[0:4])
             data = payload[4:4+dlen]
             payload = payload[4+dlen:]
-            results.append( (dtype, data) )
+            results.append( (
+                dtype,
+                Protocol.interpret_value(data, Protocol.receive_ids[dtype][1])
+                )
+            )
         return results
 
     def assemble_packet(header, payload):

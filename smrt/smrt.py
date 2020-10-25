@@ -35,7 +35,8 @@ def main():
     sc.login(args.username, args.password)
 
     actions = {
-            "stat":   4096,
+            "ports":   4096,
+            "stats": 16384,
             "mirror": 16640,
             "vlan":   8704,
             "pvid":   8706,
@@ -46,7 +47,8 @@ def main():
     else:
         header, payload = sc.query(Protocol.GET, {int(args.action): b''})
 
-    print(*Protocol.decode_payload(payload), sep="\n")
+    # print(*Protocol.interpret_payload(payload), sep="\n")
+    print(*payload, sep="\n")
 
 if __name__ == "__main__":
     main()

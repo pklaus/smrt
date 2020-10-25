@@ -37,21 +37,14 @@ def discover_switches(interfaces='all'):
         packet = Protocol.assemble_packet(header, {})
         packet = Protocol.encode(packet)
 
-        if platform.system().lower() == 'darwin':
-            rs = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            rs.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            rs.bind(('', Network.UDP_RECEIVE_FROM_PORT))
-            rs.settimeout(DISCOVERY_TIMEOUT)
-        elif platform.system().lower() == 'linux':
-            rs = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            rs.bind((Network.BROADCAST_ADDR, Network.UDP_RECEIVE_FROM_PORT))
-            #rs.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-            rs.settimeout(DISCOVERY_TIMEOUT)
-        else:
-            raise IncompatiblePlatformException()
+        # Receiving socket
+        rs = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        rs.bind((Network.BROADCAST_ADDR, Network.UDP_RECEIVE_FROM_PORT))
+        rs.settimeout(0.4)
+        rs.settimeout(DISCOVERY_TIMEOUT)
 
         ss = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        ss.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        # ss.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         ss.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         ss.bind((ip, Network.UDP_RECEIVE_FROM_PORT))
         ss.sendto(packet, (Network.BROADCAST_ADDR, Network.UDP_SEND_TO_PORT))
@@ -79,10 +72,11 @@ def main():
     # logging.basicConfig(level=logging.WARNING)
     switches = discover_switches(interfaces=args.interfaces)
     for context, header, payload in switches:
-        get = lambda kind: Protocol.get_payload_item_value(payload, kind)
-        fmt =  "Found a switch:  Host:   (Interface: {iface:8s} IP: {host_ip}  Broadcast: {broadcast})\n"
-        fmt += "                 Switch: (Kind: {kind:12s}  MAC Address: {mac}   IP Address: {switch_ip})"
-        print(fmt.format(iface=context['iface'], host_ip=context['ip'], broadcast=context['broadcast'],
-                         kind=get('type'), mac=get('mac'), switch_ip=get('ip_addr')))
+        print(context, header, payload)
+        #get = lambda kind: Protocol.get_payload_item_value(payload, kind)
+        #fmt =  "Found a switch:  Host:   (Interface: {iface:8s} IP: {host_ip}  Broadcast: {broadcast})\n"
+        #fmt += "                 Switch: (Kind: {kind:12s}  MAC Address: {mac}   IP Address: {switch_ip})"
+        #print(fmt.format(iface=context['iface'], host_ip=context['ip'], broadcast=context['broadcast'],
+        #                 kind=get('type'), mac=get('mac'), switch_ip=get('ip_addr')))
 
 if __name__ == "__main__": main()
