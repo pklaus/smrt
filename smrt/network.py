@@ -2,22 +2,15 @@
 
 import socket, random, logging
 
-from .protocol import *
-from .operations import *
-
-BROADCAST_ADDR = "255.255.255.255"
-UDP_SEND_TO_PORT = 29808
-UDP_RECEIVE_FROM_PORT = 29809
+from .protocol import Protocol
 
 logger = logging.getLogger(__name__)
 
-def mac_to_bytes(mac):
-    return bytes(int(byte, 16) for byte in mac.split(':'))
+class Network:
 
-def mac_to_str(mac):
-    return ':'.join('{:02X}'.format(byte) for byte in mac)
-
-class SwitchConversation(object):
+    BROADCAST_ADDR = "255.255.255.255"
+    UDP_SEND_TO_PORT = 29808
+    UDP_RECEIVE_FROM_PORT = 29809
 
     def __init__(self, switch_mac, host_mac, ip_address):
 
@@ -27,25 +20,31 @@ class SwitchConversation(object):
 
         self.sequence_id = random.randint(0, 1000)
 
-        header = DEFAULT_HEADER.copy()
+        header = Protocol.DEFAULT_HEADER.copy()
         header.update({
           'sequence_id': self.sequence_id,
-          'host_mac':   mac_to_bytes(host_mac),
-          'switch_mac': mac_to_bytes(switch_mac),
+          'host_mac':   Network.mac_to_bytes(host_mac),
+          'switch_mac': Network.mac_to_bytes(switch_mac),
         })
         self.header = header
 
         # Sending socket
         ss = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         ss.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        ss.bind((ip_address, UDP_RECEIVE_FROM_PORT))
+        ss.bind((ip_address, Network.UDP_RECEIVE_FROM_PORT))
 
         # Receiving socket
         rs = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        rs.bind((BROADCAST_ADDR, UDP_RECEIVE_FROM_PORT))
+        rs.bind((Network.BROADCAST_ADDR, Network.UDP_RECEIVE_FROM_PORT))
         rs.settimeout(0.4)
 
         self.ss, self.rs = ss, rs
+
+    def mac_to_bytes(mac):
+        return bytes(int(byte, 16) for byte in mac.split(':'))
+
+    def mac_to_str(mac):
+        return ':'.join('{:02X}'.format(byte) for byte in mac)
 
     def send(self, op_code, payload):
         self.sequence_id = (self.sequence_id + 1) % 1000
@@ -58,17 +57,17 @@ class SwitchConversation(object):
 
         logger.debug('Sending Header:  ' + str(header))
         logger.debug('Sending Payload: ' + str(payload))
-        packet = assemble_packet(header, payload)
-        packet = encode(packet)
+        packet = Protocol.assemble_packet(header, payload)
+        packet = Protocol.encode(packet)
 
-        self.ss.sendto(packet, (BROADCAST_ADDR, UDP_SEND_TO_PORT))
+        self.ss.sendto(packet, (Network.BROADCAST_ADDR, Network.UDP_SEND_TO_PORT))
 
     def receive(self):
         try:
             data, addr = self.rs.recvfrom(1500)
-            data = decode(data)
-            header, payload = split(data)
-            header, payload = interpret_header(header), interpret_payload(payload)
+            data = Protocol.decode(data)
+            header, payload = Protocol.split(data)
+            header, payload = Protocol.interpret_header(header), Protocol.interpret_payload(payload)
             logger.debug('Received Header:  ' + str(header))
             logger.debug('Received Payload: ' + str(payload))
             self.header['token_id'] = header['token_id']
@@ -81,11 +80,11 @@ class SwitchConversation(object):
     def query(self, op_code, payload):
         self.send(op_code, payload)
         header, payload = self.receive()
-        sequence_kind = get_sequence_kind((op_code, header['op_code']))
+        sequence_kind = Protocol.get_sequence_kind((op_code, header['op_code']))
         logger.debug('Sequence kind: ' + sequence_kind)
         return header, payload
 
     def login(self, username, password):
-        self.query(GET, get_token_id_payload())
-        self.query(LOGIN, login_payload(username, password))
+        self.query(Protocol.GET, Protocol.get_dict_id("get_token_id"))
+        self.query(Protocol.LOGIN, Protocol.login_payload(username, password))
 

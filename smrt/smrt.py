@@ -2,9 +2,8 @@
 
 import socket, time, random, argparse, logging
 
-from .protocol import *
-from .network import SwitchConversation
-from .operations import *
+from .protocol import Protocol
+from .network import Network
 
 def loglevel(x):
     try:
@@ -31,7 +30,7 @@ def main():
     host_mac = args.host_mac
     ip_address = args.ip_address
 
-    sc = SwitchConversation(switch_mac, host_mac, ip_address)
+    sc = Network(switch_mac, host_mac, ip_address)
 
     sc.login(args.username, args.password)
 
@@ -43,11 +42,11 @@ def main():
     }
 
     if args.action in actions:
-        header, payload = sc.query(GET, {actions[args.action]: b''})
+        header, payload = sc.query(Protocol.GET, {actions[args.action]: b''})
     else:
-        header, payload = sc.query(GET, {int(args.action): b''})
+        header, payload = sc.query(Protocol.GET, {int(args.action): b''})
 
-    print(*decode_payload(payload), sep="\n")
+    print(*Protocol.decode_payload(payload), sep="\n")
 
 if __name__ == "__main__":
     main()
