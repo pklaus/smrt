@@ -72,7 +72,7 @@ class Protocol:
         12288: ['?',  'bool',  'QoS Basic 1'],
         12289: ['2s', 'hex',   'QoS Basic 2'],
         16640: ['10s','hex',   'port_mirror'],
-        16384: ['*s', 'hex',   'port_statistics'],
+        16384: ['*s', 'stat',   'port_statistics'],
         17152: ['?',  'bool',  'loop_prevention'],
     }
 
@@ -161,6 +161,7 @@ class Protocol:
             payload = payload[4+dlen:]
             results.append( (
                 dtype,
+                data.hex(sep=" "),
                 Protocol.interpret_value(data, Protocol.tp_ids[dtype][1])
                 )
             )
@@ -182,15 +183,17 @@ class Protocol:
         elif kind == 'ip':
             value = ip_address(value)
         elif kind == 'hex':
-            value = ':'.join(['{:02X}'.format(byte) for byte in value])
+            value = value.hex(sep=":")
         elif kind == 'action':
             value = "n/a"
         elif kind == 'dec':
-            value = int(''.join('%02X' % byte for byte in value), 16)
+            value = int.from_bytes(value, 'big')
         elif kind == 'vlan':
-            value = (int(value[1]), bin(value[5]), bin(value[9]), bin(value[5] & ~value[9]), value[10:-1].decode('ascii'))
+            value = struct.unpack("!hii", value[:10]) + (value[10:-1].decode('ascii'), )
         elif kind == 'pvid':
-            value = (int(value[0]), int(value[2]))
+            value = struct.unpack("!bh", value)
+        elif kind == 'stat':
+            value = struct.unpack("!bbbiiii", value)
         elif kind == 'bool':
             if   len(value) == 0: pass
             elif len(value) == 1: value = value[0] > 0
