@@ -14,7 +14,6 @@ def loglevel(x):
 def main():
     logger = logging.getLogger(__name__)
     parser = argparse.ArgumentParser()
-    parser.add_argument('--configfile', '-c')
     parser.add_argument('--switch-mac', '-s')
     parser.add_argument('--host-mac', )
     parser.add_argument('--ip-address', '-i')
