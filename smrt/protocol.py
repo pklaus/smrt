@@ -64,17 +64,17 @@ class Protocol:
     'discover':     (DISCOVERY, SET),
     }
 
-    tp_ids = {
+    ids_tp = {
         1:     ['*s', 'str',   'type'],
         2:     ['*s', 'str',   'hostname'],
         3:     ['6s', 'hex',   'mac'],
         4:     ['4s', 'ip',    'ip_addr'],
         5:     ['4s', 'ip',    'ip_mask'],
         6:     ['4s', 'ip',    'gateway'],
-        7:     ['*s', 'str',   'firmware_version'],
-        8:     ['*s', 'str',   'hardware_version'],
+        7:     ['*s', 'str',   'firmware'],
+        8:     ['*s', 'str',   'hardware'],
         9:     ['?',  'bool',  'dhcp'],
-        10:    ['b',  'dec',   'num_ports'],
+        10:    ['b',  'dec',   'ports'],
         13:    ['?',  'bool',  'v4'],
         512:   ['*s', 'str',   'username'],
         514:   ['*s', 'str',   'password'],
@@ -84,18 +84,18 @@ class Protocol:
         4096:  ['*s', 'hex',   'port_settings'],
         4608:  ['5s', 'hex',   'port_trunk'],
         8192:  ['2s', 'hex',   'mtu_vlan'],
-        8704:  ['?',  'hex',   '802.1q vlan enabled'],
-        8705:  ['*s', 'vlan',  '802.1q vlan'],
-        8706:  ['*s', 'pvid',  '802.1q vlan pvid'],
-        8707:  ['*s', 'str',   '802.1q vlan filler'],
-        12288: ['?',  'bool',  'QoS Basic 1'],
-        12289: ['2s', 'hex',   'QoS Basic 2'],
+        8704:  ['?',  'hex',   'vlan_enabled'],
+        8705:  ['*s', 'vlan',  'vlan'],
+        8706:  ['*s', 'pvid',  'pvid'],
+        8707:  ['*s', 'str',   'vlan_filler'],
+        12288: ['?',  'bool',  'qos1'],
+        12289: ['2s', 'hex',   'qos2'],
         16640: ['10s','hex',   'port_mirror'],
-        16384: ['*s', 'stat',   'port_statistics'],
-        17152: ['?',  'bool',  'loop_prevention'],
+        16384: ['*s', 'stat',  'stats'],
+        17152: ['?',  'bool',  'loop_prev'],
     }
 
-    ids = {v[2]: k for k, v in tp_ids.items()}
+    tp_ids = {v[2]: k for k, v in ids_tp.items()}
 
     def get_sequence_kind(sequence):
         for key, value in Protocol.sequences.items():
@@ -103,7 +103,7 @@ class Protocol:
         return 'unknown'
 
     def get_id(name):
-        return Protocol.ids[name]
+        return Protocol.tp_ids[name]
 
     def decode(data):
         data = bytearray(data)
@@ -135,8 +135,9 @@ class Protocol:
             data = payload[4:4+dlen]
             results.append( (
                 dtype,
+                Protocol.ids_tp[dtype][2],
                 data.hex(sep=" "),
-                Protocol.interpret_value(data, Protocol.tp_ids[dtype][1])
+                Protocol.interpret_value(data, Protocol.ids_tp[dtype][1])
                 )
             )
             payload = payload[4+dlen:]

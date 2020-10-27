@@ -20,28 +20,20 @@ def main():
     parser.add_argument('--username', '-u')
     parser.add_argument('--password', '-p')
     parser.add_argument('--loglevel', '-l', type=loglevel, default='INFO')
-    parser.add_argument('action')
+    parser.add_argument('action', default=None, nargs='?')
     args = parser.parse_args()
 
     logging.basicConfig(level=args.loglevel)
 
     sc = Network(args.ip_address, args.host_mac, args.switch_mac)
     sc.login(args.username, args.password)
-
-    actions = {
-            "ports":   4096,
-            "stats": 16384,
-            "mirror": 16640,
-            "vlan":   8704,
-            "pvid":   8706,
-    }
+    actions = Protocol.tp_ids
 
     if args.action in actions:
         header, payload = sc.query(Protocol.GET, {actions[args.action]: b''})
+        print(*payload, sep="\n")
     else:
-        header, payload = sc.query(Protocol.GET, {int(args.action): b''})
-
-    print(*payload, sep="\n")
+        print("Actions:" , *actions.keys())
 
 if __name__ == "__main__":
     main()
