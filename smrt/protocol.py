@@ -74,15 +74,15 @@ class Protocol:
         7:     ['*s', 'str',   'firmware'],
         8:     ['*s', 'str',   'hardware'],
         9:     ['?',  'bool',  'dhcp'],
-        10:    ['b',  'dec',   'ports'],
+        10:    ['b',  'dec',   'num_ports'],
         13:    ['?',  'bool',  'v4'],
         512:   ['*s', 'str',   'username'],
         514:   ['*s', 'str',   'password'],
         2304:  ['a',  'action','save'],
         2305:  ['a',  'action','get_token_id'],
         4352:  ['?',  'bool',  'igmp_snooping'],
-        4096:  ['*s', 'hex',   'port_settings'],
-        4608:  ['5s', 'hex',   'port_trunk'],
+        4096:  ['*s', 'hex',   'ports'],
+        4608:  ['5s', 'hex',   'trunk'],
         8192:  ['2s', 'hex',   'mtu_vlan'],
         8704:  ['?',  'hex',   'vlan_enabled'],
         8705:  ['*s', 'vlan',  'vlan'],
@@ -90,7 +90,7 @@ class Protocol:
         8707:  ['*s', 'str',   'vlan_filler'],
         12288: ['?',  'bool',  'qos1'],
         12289: ['2s', 'hex',   'qos2'],
-        16640: ['10s','hex',   'port_mirror'],
+        16640: ['10s','hex',   'mirror'],
         16384: ['*s', 'stat',  'stats'],
         17152: ['?',  'bool',  'loop_prev'],
     }
@@ -136,7 +136,7 @@ class Protocol:
             results.append( (
                 dtype,
                 Protocol.ids_tp[dtype][2],
-                data.hex(sep=" "),
+                # data.hex(sep=" "),
                 Protocol.interpret_value(data, Protocol.ids_tp[dtype][1])
                 )
             )

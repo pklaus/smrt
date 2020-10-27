@@ -41,7 +41,7 @@ class Network:
         return bytes(int(byte, 16) for byte in mac.split(':'))
 
     def mac_to_str(mac):
-        return ':'.join('{:02X}'.format(byte) for byte in mac)
+        return a.hex(":")
 
     def send(self, op_code, payload):
         self.sequence_id = (self.sequence_id + 1) % 1000
@@ -85,6 +85,6 @@ class Network:
         username = username.encode('ascii') + b'\x00'
         password = password.encode('ascii') + b'\x00'
         self.query(
-                Protocol.LOGIN,
-                {Protocol.get_id('username'): username, Protocol.get_id('password'): password}
+            Protocol.LOGIN,
+            {Protocol.get_id('username'): username, Protocol.get_id('password'): password}
         )

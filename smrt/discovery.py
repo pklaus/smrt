@@ -16,20 +16,25 @@ def discover_switches():
     settings = []
     for iface in interfaces:
         addrs = netifaces.ifaddresses(iface)
-        if netifaces.AF_INET not in addrs: continue
-        if netifaces.AF_LINK not in addrs: continue
+        if netifaces.AF_INET not in addrs:
+            continue
+        if netifaces.AF_LINK not in addrs:
+            continue
         assert len(addrs[netifaces.AF_LINK]) == 1
         mac = addrs[netifaces.AF_LINK][0]['addr']
         for addr in addrs[netifaces.AF_INET]:
-            if 'broadcast' not in addr or 'addr' not in addr: continue
+            if 'broadcast' not in addr or 'addr' not in addr:
+                continue
             settings.append((iface, addr['addr'], mac, addr['broadcast']))
 
+    ret = []
     for iface, ip, mac, broadcast in settings:
         net = Network(ip, mac)
         logger.warning((iface, ip, mac, broadcast))
         net.send(Protocol.DISCOVERY, {})
         header, payload = net.receive()
-        yield header, payload
+        ret.append( (header, payload) )
+    return ret
 
 def main():
     switches = discover_switches()
