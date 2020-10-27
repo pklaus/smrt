@@ -25,12 +25,12 @@ def main():
 
     logging.basicConfig(level=args.loglevel)
 
-    sc = Network(args.ip_address, args.host_mac, args.switch_mac)
-    sc.login(args.username, args.password)
+    net = Network(args.ip_address, args.host_mac, args.switch_mac)
+    net.login(args.username, args.password)
     actions = Protocol.tp_ids
 
     if args.action in actions:
-        header, payload = sc.query(Protocol.GET, {actions[args.action]: b''})
+        header, payload = net.query(Protocol.GET, {actions[args.action]: b''})
         print(*payload, sep="\n")
     else:
         print("Actions:" , *actions.keys())
