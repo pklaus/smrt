@@ -80,11 +80,20 @@ class Network:
         logger.debug('Sequence kind: ' + sequence_kind)
         return header, payload
 
-    def login(self, username, password):
+    def login(self, username, password, payload = None):
         self.query(Protocol.GET, {Protocol.get_id("get_token_id"): b''})
         username = username.encode('ascii') + b'\x00'
         password = password.encode('ascii') + b'\x00'
-        self.query(
-            Protocol.LOGIN,
-            {Protocol.get_id('username'): username, Protocol.get_id('password'): password}
-        )
+        if payload is None:
+            self.query(
+                Protocol.LOGIN,
+                {Protocol.get_id('username'): username, Protocol.get_id('password'): password}
+            )
+        else:
+            payload.update(
+                {Protocol.get_id('username'): username, Protocol.get_id('password'): password}
+            )
+            self.query(
+                Protocol.LOGIN,
+                payload
+            )

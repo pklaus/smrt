@@ -143,6 +143,10 @@ class Protocol:
             payload = payload[4+dlen:]
         return results
 
+    def analyze(data):
+        header, payload = Protocol.split(data)
+        return Protocol.interpret_header(header), Protocol.interpret_payload(payload)
+
     def assemble_packet(header, payload):
         payload_bytes = b''
         for dtype, value in payload.items():

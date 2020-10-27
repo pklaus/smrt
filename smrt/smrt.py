@@ -26,8 +26,10 @@ def main():
     logging.basicConfig(level=args.loglevel)
 
     net = Network(args.ip_address, args.host_mac, args.switch_mac)
-    net.login(args.username, args.password)
     actions = Protocol.tp_ids
+    net.login(args.username, args.password)
+    v = Protocol.set_vlan(10, 255, 254, "test3")
+    net.login(args.username, args.password, {actions["vlan"]: v})
 
     if args.action in actions:
         header, payload = net.query(Protocol.GET, {actions[args.action]: b''})
