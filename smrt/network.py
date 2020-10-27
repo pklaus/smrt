@@ -19,13 +19,12 @@ class Network:
 
         self.sequence_id = random.randint(0, 1000)
 
-        header = Protocol.header["blank"].copy()
-        header.update({
+        self.header = Protocol.header["blank"].copy()
+        self.header.update({
           'sequence_id': self.sequence_id,
           'host_mac':   Network.mac_to_bytes(self.host_mac),
           'switch_mac': Network.mac_to_bytes(self.switch_mac),
         })
-        self.header = header
 
         # Sending socket
         self.ss = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -45,23 +44,22 @@ class Network:
 
     def send(self, op_code, payload):
         self.sequence_id = (self.sequence_id + 1) % 1000
-
-        header = self.header
-        header.update({
+        self.header.update({
           'sequence_id': self.sequence_id,
           'op_code': op_code,
         })
-
-        logger.debug('Sending Header:  ' + str(header))
-        logger.debug('Sending Payload: ' + str(payload))
-        packet = Protocol.assemble_packet(header, payload)
+        packet = Protocol.assemble_packet(self.header, payload)
+        logger.debug('Sending Packet: ' + packet.hex(" "))
         packet = Protocol.encode(packet)
+        logger.debug('Sending Header:  ' + str(self.header))
+        logger.debug('Sending Payload: ' + str(payload))
         self.ss.sendto(packet, (Network.BROADCAST_ADDR, Network.UDP_SEND_TO_PORT))
 
     def receive(self):
         try:
             data, addr = self.rs.recvfrom(1500)
             data = Protocol.decode(data)
+            logger.debug('Receive Packet: ' + data.hex(" "))
             header, payload = Protocol.split(data)
             header, payload = Protocol.interpret_header(header), Protocol.interpret_payload(payload)
             logger.debug('Received Header:  ' + str(header))
@@ -76,24 +74,29 @@ class Network:
     def query(self, op_code, payload):
         self.send(op_code, payload)
         header, payload = self.receive()
-        sequence_kind = Protocol.get_sequence_kind((op_code, header['op_code']))
-        logger.debug('Sequence kind: ' + sequence_kind)
         return header, payload
 
-    def login(self, username, password, payload = None):
+    def login_dict(self, username, password):
+        return {
+            Protocol.get_id('username'): username.encode('ascii') + b'\x00',
+            Protocol.get_id('password'): password.encode('ascii') + b'\x00'
+        }
+
+    def login(self, username, password):
+        self.query(Protocol.GET, {Protocol.get_id("get_token_id"): b''})
+        self.query(
+            Protocol.LOGIN,
+            self.login_dict(username, password)
+        )
+
+    def set(self, username, password, payload):
         self.query(Protocol.GET, {Protocol.get_id("get_token_id"): b''})
         username = username.encode('ascii') + b'\x00'
         password = password.encode('ascii') + b'\x00'
-        if payload is None:
-            self.query(
-                Protocol.LOGIN,
-                {Protocol.get_id('username'): username, Protocol.get_id('password'): password}
-            )
-        else:
-            payload.update(
-                {Protocol.get_id('username'): username, Protocol.get_id('password'): password}
-            )
-            self.query(
-                Protocol.LOGIN,
-                payload
-            )
+        payload.update(
+            {Protocol.get_id('username'): username, Protocol.get_id('password'): password}
+        )
+        self.query(
+            Protocol.LOGIN,
+            payload
+        )
