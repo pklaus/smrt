@@ -152,7 +152,6 @@ class Protocol:
         for dtype, value in payload.items():
             payload_bytes += struct.pack('!hh', dtype, len(value))
             payload_bytes += value
-        print(len(payload_bytes), payload_bytes)
         header['check_length'] = Protocol.header["len"] + len(payload_bytes) + len(Protocol.PACKET_END)
         header = tuple(header[part] for part in Protocol.header['blank'].keys())
         header_bytes = struct.pack(Protocol.header['fmt'], *header)

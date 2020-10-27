@@ -5,9 +5,8 @@ import logging
 import argparse
 import netifaces
 
-from . import IncompatiblePlatformException
 from .protocol import Protocol
-from .network import Network
+from .network import Network, ConnectionProblem
 
 logger = logging.getLogger(__name__)
 
@@ -32,9 +31,12 @@ def discover_switches():
         net = Network(ip, mac)
         logger.warning((iface, ip, mac, broadcast))
         net.send(Protocol.DISCOVERY, {})
-        header, payload = net.receive()
-        ret.append( (header, payload) )
-    return ret
+        while True:
+            try:
+                header, payload = net.receive()
+                yield header, payload
+            except ConnectionProblem:
+                break
 
 def main():
     switches = discover_switches()

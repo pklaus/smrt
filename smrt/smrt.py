@@ -27,17 +27,17 @@ def main():
 
     net = Network(args.ip_address, args.host_mac, args.switch_mac)
     actions = Protocol.tp_ids
-    l = net.login_dict(args.username, args.password)
-    v = Protocol.set_vlan(10, 0, 0, "test6")
-    l.update({actions["vlan"]: v})
-    print(l)
-    net.set(args.username, args.password, l)
+    net.login(args.username, args.password)
+    # l = net.login_dict(args.username, args.password)
+    # v = Protocol.set_vlan(10, 255, 248, "test2")
+    # l.update({actions["vlan"]: v})
+    # net.set(args.username, args.password, l)
 
-    #if args.action in actions:
-    #    header, payload = net.query(Protocol.GET, {actions[args.action]: b''})
-    #    print(*payload, sep="\n")
-    #else:
-    #    print("Actions:" , *actions.keys())
+    if args.action in actions:
+        header, payload = net.query(Protocol.GET, {actions[args.action]: b''})
+        print(*payload, sep="\n")
+    else:
+        print("Actions:" , *actions.keys())
 
 if __name__ == "__main__":
     main()

@@ -6,6 +6,9 @@ from .protocol import Protocol
 
 logger = logging.getLogger(__name__)
 
+class ConnectionProblem(Exception):
+    pass
+
 class Network:
 
     BROADCAST_ADDR = "255.255.255.255"
@@ -67,9 +70,7 @@ class Network:
             self.header['token_id'] = header['token_id']
             return header, payload
         except:
-            print("no response")
             raise ConnectionProblem()
-            return {}, {}
 
     def query(self, op_code, payload):
         self.send(op_code, payload)
