@@ -26,12 +26,7 @@ def main():
 
     logging.basicConfig(level=args.loglevel)
 
-    switch_mac = args.switch_mac
-    host_mac = args.host_mac
-    ip_address = args.ip_address
-
-    sc = Network(switch_mac, host_mac, ip_address)
-
+    sc = Network(args.ip_address, args.host_mac, args.switch_mac)
     sc.login(args.username, args.password)
 
     actions = {
@@ -47,7 +42,6 @@ def main():
     else:
         header, payload = sc.query(Protocol.GET, {int(args.action): b''})
 
-    # print(*Protocol.interpret_payload(payload), sep="\n")
     print(*payload, sep="\n")
 
 if __name__ == "__main__":

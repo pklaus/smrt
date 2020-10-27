@@ -12,9 +12,8 @@ class Network:
     UDP_SEND_TO_PORT = 29808
     UDP_RECEIVE_FROM_PORT = 29809
 
-    def __init__(self, switch_mac, host_mac, ip_address):
-
-        self.switch_mac = '00:00:00:00:00:00' if switch_mac is None else switch_mac
+    def __init__(self, ip_address, host_mac, switch_mac="00:00:00:00:00:00"):
+        self.switch_mac = switch_mac
         self.host_mac = host_mac
         self.ip_address = ip_address
 
@@ -29,16 +28,14 @@ class Network:
         self.header = header
 
         # Sending socket
-        ss = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        ss.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        ss.bind((ip_address, Network.UDP_RECEIVE_FROM_PORT))
+        self.ss = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.ss.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        self.ss.bind((ip_address, Network.UDP_RECEIVE_FROM_PORT))
 
         # Receiving socket
-        rs = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        rs.bind((Network.BROADCAST_ADDR, Network.UDP_RECEIVE_FROM_PORT))
-        rs.settimeout(0.4)
-
-        self.ss, self.rs = ss, rs
+        self.rs = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.rs.bind((Network.BROADCAST_ADDR, Network.UDP_RECEIVE_FROM_PORT))
+        self.rs.settimeout(0.5)
 
     def mac_to_bytes(mac):
         return bytes(int(byte, 16) for byte in mac.split(':'))

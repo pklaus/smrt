@@ -25,7 +25,7 @@ def discover_switches():
             settings.append((iface, addr['addr'], mac, addr['broadcast']))
 
     for iface, ip, mac, broadcast in settings:
-        net = Network(None, mac, ip)
+        net = Network(ip, mac)
         logger.warning((iface, ip, mac, broadcast))
         net.send(Protocol.DISCOVERY, {})
         header, payload = net.receive()
