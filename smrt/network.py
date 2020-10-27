@@ -14,7 +14,7 @@ class Network:
 
     def __init__(self, switch_mac, host_mac, ip_address):
 
-        self.switch_mac = switch_mac
+        self.switch_mac = '00:00:00:00:00:00' if switch_mac is None else switch_mac
         self.host_mac = host_mac
         self.ip_address = ip_address
 
@@ -23,8 +23,8 @@ class Network:
         header = Protocol.header["blank"].copy()
         header.update({
           'sequence_id': self.sequence_id,
-          'host_mac':   Network.mac_to_bytes(host_mac),
-          'switch_mac': Network.mac_to_bytes(switch_mac),
+          'host_mac':   Network.mac_to_bytes(self.host_mac),
+          'switch_mac': Network.mac_to_bytes(self.switch_mac),
         })
         self.header = header
 
@@ -59,7 +59,9 @@ class Network:
         logger.debug('Sending Payload: ' + str(payload))
         packet = Protocol.assemble_packet(header, payload)
         packet = Protocol.encode(packet)
+        self.send_packet(packet)
 
+    def send_packet(self, packet):
         self.ss.sendto(packet, (Network.BROADCAST_ADDR, Network.UDP_SEND_TO_PORT))
 
     def receive(self):

@@ -175,3 +175,10 @@ class Protocol:
             else: raise AssertionError('boolean should be one byte long')
         return value
 
+    def set_vlan(vlan_num, member_mask, tagged_mask, vlan_name):
+        value = struct.pack("!hii",vlan_num, member_mask, tagged_mask) + vlan_name.encode("ascii")
+        return value
+
+if __name__ == "__main__":
+    v = Protocol.set_vlan(10, 255, 254, "test")
+    print(v)
