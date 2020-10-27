@@ -27,15 +27,7 @@ def discover_switches():
     for iface, ip, mac, broadcast in settings:
         net = Network(None, mac, ip)
         logger.warning((iface, ip, mac, broadcast))
-        sequence_id = random.randint(0, 1000)
-        header = Protocol.header["blank"].copy()
-        header.update({
-          'sequence_id': sequence_id,
-          'host_mac': bytes(int(byte, 16) for byte in mac.split(':')),
-        })
-        packet = Protocol.assemble_packet(header, {})
-        packet = Protocol.encode(packet)
-        net.send_packet(packet)
+        net.send(Protocol.DISCOVERY, {})
         header, payload = net.receive()
         yield header, payload
 

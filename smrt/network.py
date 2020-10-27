@@ -59,9 +59,6 @@ class Network:
         logger.debug('Sending Payload: ' + str(payload))
         packet = Protocol.assemble_packet(header, payload)
         packet = Protocol.encode(packet)
-        self.send_packet(packet)
-
-    def send_packet(self, packet):
         self.ss.sendto(packet, (Network.BROADCAST_ADDR, Network.UDP_SEND_TO_PORT))
 
     def receive(self):
