@@ -2,10 +2,24 @@
 
 SEP = ","
 
-def ports2byte(numports):
+def ports2list(ports):
+    if ports is None:
+        l = []
+    else:
+        try:
+            l = [int(x) for x in ports.split(SEP)]
+        except ValueError:
+            l = []
+    return l
+
+def ports2byte(ports):
     out = 0
-    for i in numports.split(SEP):
-        out |= (1 << (int(i) - 1))
+    l = ports2list(ports)
+    if l == []:
+        out = 0
+    else:
+        for i in l:
+            out |= (1 << (int(i) - 1))
     return out
 
 def byte2ports(byte):
@@ -18,5 +32,5 @@ def byte2ports(byte):
 
 if __name__ == '__main__':
     #print(ports2byte("12345678"))
-    a = ports2byte("1:2:5:6:8:12:15")
+    a = ports2byte("1,2,5,6,8,12,15")
     print(a, byte2ports(a))

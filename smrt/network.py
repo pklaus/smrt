@@ -78,27 +78,24 @@ class Network:
         return header, payload
 
     def login_dict(self, username, password):
-        return {
-            Protocol.get_id('username'): username.encode('ascii') + b'\x00',
-            Protocol.get_id('password'): password.encode('ascii') + b'\x00'
-        }
+        return [
+            (Protocol.get_id('username'), username.encode('ascii') + b'\x00'),
+            (Protocol.get_id('password'), password.encode('ascii') + b'\x00'),
+        ]
 
     def login(self, username, password):
-        self.query(Protocol.GET, {Protocol.get_id("get_token_id"): b''})
+        self.query(Protocol.GET, [(Protocol.get_id("get_token_id"), b'')])
         self.query(
             Protocol.LOGIN,
             self.login_dict(username, password)
         )
 
     def set(self, username, password, payload):
-        self.query(Protocol.GET, {Protocol.get_id("get_token_id"): b''})
-        username = username.encode('ascii') + b'\x00'
-        password = password.encode('ascii') + b'\x00'
-        payload.update(
-            {Protocol.get_id('username'): username, Protocol.get_id('password'): password}
-        )
+        self.query(Protocol.GET, [(Protocol.get_id("get_token_id"), b'')])
+        real_payload = self.login_dict(username, password)
+        real_payload += payload
         header, payload = self.query(
             Protocol.LOGIN,
-            payload
+            real_payload
         )
         return header, payload

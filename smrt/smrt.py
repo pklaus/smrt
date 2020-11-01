@@ -34,7 +34,7 @@ def main():
     # net.set(args.username, args.password, l)
 
     if args.action in actions:
-        header, payload = net.query(Protocol.GET, {actions[args.action]: b''})
+        header, payload = net.query(Protocol.GET, [(actions[args.action], b'')])
         print(*payload, sep="\n")
     else:
         print("Actions:" , *actions.keys())

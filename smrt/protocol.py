@@ -150,7 +150,7 @@ class Protocol:
 
     def assemble_packet(header, payload):
         payload_bytes = b''
-        for dtype, value in payload.items():
+        for dtype, value in payload:
             payload_bytes += struct.pack('!hh', dtype, len(value))
             payload_bytes += value
         header['check_length'] = Protocol.header["len"] + len(payload_bytes) + len(Protocol.PACKET_END)
@@ -187,6 +187,14 @@ class Protocol:
         value = struct.pack("!hii",vlan_num, member_mask, tagged_mask) + vlan_name.encode("ascii") + b'\x00'
         return value
 
+    def set_pvid(vlan_num, port):
+        value = (struct.pack("!bh", port, vlan_num))
+        return value
+
 if __name__ == "__main__":
-    v = Protocol.set_vlan(10, 255, 254, "test")
-    print(v, len(v))
+    #v = Protocol.set_vlan(10, 255, 254, "test")
+    #print(v, len(v))
+    out = bytearray()
+    pvid = "1,3"
+    print(Protocol.set_pvid(90, pvid).hex())
+
