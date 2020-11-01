@@ -66,37 +66,37 @@ class Protocol:
     }
 
     ids_tp = {
-        1:     ['*s', 'str',   'type'],
-        2:     ['*s', 'str',   'hostname'],
-        3:     ['6s', 'hex',   'mac'],
-        4:     ['4s', 'ip',    'ip_addr'],
-        5:     ['4s', 'ip',    'ip_mask'],
-        6:     ['4s', 'ip',    'gateway'],
-        7:     ['*s', 'str',   'firmware'],
-        8:     ['*s', 'str',   'hardware'],
-        9:     ['?',  'bool',  'dhcp'],
-        10:    ['b',  'dec',   'num_ports'],
-        13:    ['?',  'bool',  'v4'],
-        512:   ['*s', 'str',   'username'],
-        514:   ['*s', 'str',   'password'],
-        2304:  ['a',  'action','save'],
-        2305:  ['a',  'action','get_token_id'],
-        4352:  ['?',  'bool',  'igmp_snooping'],
-        4096:  ['*s', 'hex',   'ports'],
-        4608:  ['5s', 'hex',   'trunk'],
-        8192:  ['2s', 'hex',   'mtu_vlan'],
-        8704:  ['?',  'hex',   'vlan_enabled'],
-        8705:  ['*s', 'vlan',  'vlan'],
-        8706:  ['*s', 'pvid',  'pvid'],
-        8707:  ['*s', 'str',   'vlan_filler'],
-        12288: ['?',  'bool',  'qos1'],
-        12289: ['2s', 'hex',   'qos2'],
-        16640: ['10s','hex',   'mirror'],
-        16384: ['*s', 'stat',  'stats'],
-        17152: ['?',  'bool',  'loop_prev'],
+        1:     ('str',   'type'),
+        2:     ('str',   'hostname'),
+        3:     ('hex',   'mac'),
+        4:     ('ip',    'ip_addr'),
+        5:     ('ip',    'ip_mask'),
+        6:     ('ip',    'gateway'),
+        7:     ('str',   'firmware'),
+        8:     ('str',   'hardware'),
+        9:     ('bool',  'dhcp'),
+        10:    ('dec',   'num_ports'),
+        13:    ('bool',  'v4'),
+        512:   ('str',   'username'),
+        514:   ('str',   'password'),
+        2304:  ('action','save'),
+        2305:  ('action','get_token_id'),
+        4352:  ('bool',  'igmp_snooping'),
+        4096:  ('hex',   'ports'),
+        4608:  ('hex',   'trunk'),
+        8192:  ('hex',   'mtu_vlan'),
+        8704:  ('hex',   'vlan_enabled'),
+        8705:  ('vlan',  'vlan'),
+        8706:  ('pvid',  'pvid'),
+        8707:  ('str',   'vlan_filler'),
+        12288: ('bool',  'qos1'),
+        12289: ('hex',   'qos2'),
+        16640: ('hex',   'mirror'),
+        16384: ('stat',  'stats'),
+        17152: ('bool',  'loop_prev'),
     }
 
-    tp_ids = {v[2]: k for k, v in ids_tp.items()}
+    tp_ids = {v[1]: k for k, v in ids_tp.items()}
 
     def get_sequence_kind(sequence):
         for key, value in Protocol.sequences.items():
@@ -136,9 +136,9 @@ class Protocol:
             data = payload[4:4+dlen]
             results.append( (
                 dtype,
-                Protocol.ids_tp[dtype][2],
+                Protocol.ids_tp[dtype][1],
                 # data.hex(sep=" "),
-                Protocol.interpret_value(data, Protocol.ids_tp[dtype][1])
+                Protocol.interpret_value(data, Protocol.ids_tp[dtype][0])
                 )
             )
             payload = payload[4+dlen:]
@@ -178,9 +178,12 @@ class Protocol:
         elif kind == 'stat':
             value = struct.unpack("!bbbiiii", value)
         elif kind == 'bool':
-            if   len(value) == 0: pass
-            elif len(value) == 1: value = value[0] > 0
-            else: raise AssertionError('boolean should be one byte long')
+            if   len(value) == 0:
+                pass
+            elif len(value) == 1:
+                value = value[0] > 0
+            else:
+                raise AssertionError('boolean should be one byte long')
         return value
 
     def set_vlan(vlan_num, member_mask, tagged_mask, vlan_name):
@@ -195,6 +198,4 @@ if __name__ == "__main__":
     #v = Protocol.set_vlan(10, 255, 254, "test")
     #print(v, len(v))
     out = bytearray()
-    pvid = "1,3"
-    print(Protocol.set_pvid(90, pvid).hex())
-
+    print(Protocol.set_pvid(90, 5).hex())
