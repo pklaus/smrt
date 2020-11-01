@@ -2,7 +2,7 @@
 
 import socket, random, logging
 
-from .protocol import Protocol
+from protocol import Protocol
 
 logger = logging.getLogger(__name__)
 

@@ -2,8 +2,8 @@
 
 import socket, time, random, argparse, logging
 
-from .protocol import Protocol
-from .network import Network
+from protocol import Protocol
+from network import Network
 
 def loglevel(x):
     try:

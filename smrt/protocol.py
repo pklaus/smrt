@@ -1,6 +1,6 @@
 import struct
 from ipaddress import ip_address
-from smrt.binary import byte2ports
+from binary import byte2ports
 
 class Protocol:
     PACKET_END = b'\xff\xff\x00\x00'

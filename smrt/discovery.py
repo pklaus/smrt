@@ -5,8 +5,8 @@ import logging
 import argparse
 import netifaces
 
-from .protocol import Protocol
-from .network import Network, ConnectionProblem
+from protocol import Protocol
+from network import Network, ConnectionProblem
 
 logger = logging.getLogger(__name__)
 
