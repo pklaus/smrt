@@ -27,7 +27,7 @@ def byte2ports(byte):
     for i in range(32):
         if byte % 2:
             out.append(str(i + 1))
-        byte = (byte >> 1)
+        byte >>= 1
     return SEP.join(out)
 
 if __name__ == '__main__':
