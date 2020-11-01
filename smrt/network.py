@@ -97,7 +97,8 @@ class Network:
         payload.update(
             {Protocol.get_id('username'): username, Protocol.get_id('password'): password}
         )
-        self.query(
+        header, payload = self.query(
             Protocol.LOGIN,
             payload
         )
+        return header, payload
