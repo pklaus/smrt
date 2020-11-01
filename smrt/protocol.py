@@ -1,5 +1,6 @@
 import struct
 from ipaddress import ip_address
+from smrt.binary import byte2ports
 
 class Protocol:
     PACKET_END = b'\xff\xff\x00\x00'
@@ -169,7 +170,9 @@ class Protocol:
         elif kind == 'dec':
             value = int.from_bytes(value, 'big')
         elif kind == 'vlan':
-            value = struct.unpack("!hii", value[:10]) + (value[10:-1].decode('ascii'), )
+            value = list(struct.unpack("!hii", value[:10]) + (value[10:-1].decode('ascii'), ))
+            value[1] = byte2ports(value[1])
+            value[2] = byte2ports(value[2])
         elif kind == 'pvid':
             value = struct.unpack("!bh", value)
         elif kind == 'stat':
