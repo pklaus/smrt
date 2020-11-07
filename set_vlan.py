@@ -2,9 +2,9 @@
 
 import socket, time, random, argparse, logging
 
-from .protocol import Protocol
-from .network import Network
-from .binary import ports2byte, ports2list
+from protocol import Protocol
+from network import Network
+from binary import ports2byte, ports2list
 
 def loglevel(x):
     try:
@@ -38,11 +38,13 @@ def main():
 
     if (args.delete):
         v = Protocol.set_vlan(int(args.vlan), 0, 0, "")
-    else:
+    elif args.vlan_member or args.vlan_tagged:
         v = Protocol.set_vlan(int(args.vlan), ports2byte(args.vlan_member), ports2byte(args.vlan_tagged), args.vlan_name)
-    l = [(actions["vlan"], v)]
-    header, payload = net.set(args.username, args.password, l)
-    print(*payload, sep="\n")
+
+    if args.vlan_member or args.vlan_tagged or args.delete:
+        l = [(actions["vlan"], v)]
+        header, payload = net.set(args.username, args.password, l)
+        print(*payload, sep="\n")
 
     if args.vlan_pvid is not None:
         l = []
