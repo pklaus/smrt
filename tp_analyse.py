@@ -24,8 +24,8 @@ def main():
 
         for s in ret:
             data = Protocol.decode(s)
-            print(data.hex(" "))
-            print(Protocol.analyze(data))
+            # print(data.hex(" "))
+            print(Protocol.analyze(data)[1])
 
 
 if __name__ == '__main__':

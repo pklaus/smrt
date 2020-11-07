@@ -34,19 +34,20 @@ def main():
 
     net = Network(args.ip_address, args.host_mac, args.switch_mac)
     actions = Protocol.tp_ids
-    net.login(args.username, args.password)
 
-    if (args.delete):
-        v = Protocol.set_vlan(int(args.vlan), 0, 0, "")
-    elif args.vlan_member or args.vlan_tagged:
-        v = Protocol.set_vlan(int(args.vlan), ports2byte(args.vlan_member), ports2byte(args.vlan_tagged), args.vlan_name)
 
     if args.vlan_member or args.vlan_tagged or args.delete:
+        if (args.delete):
+            v = Protocol.set_vlan(int(args.vlan), 0, 0, "")
+        else:
+            v = Protocol.set_vlan(int(args.vlan), ports2byte(args.vlan_member), ports2byte(args.vlan_tagged), args.vlan_name)
+        net.login(args.username, args.password)
         l = [(actions["vlan"], v)]
         header, payload = net.set(args.username, args.password, l)
         print(*payload, sep="\n")
 
     if args.vlan_pvid is not None:
+        net.login(args.username, args.password)
         l = []
         for port in ports2list(args.vlan_pvid):
             if port != 0:

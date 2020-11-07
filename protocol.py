@@ -174,7 +174,7 @@ class Protocol:
             value[1] = byte2ports(value[1])
             value[2] = byte2ports(value[2])
         elif kind == 'pvid':
-            value = struct.unpack("!bh", value)
+                value = struct.unpack("!bh", value) if value else None
         elif kind == 'stat':
             value = struct.unpack("!bbbiiii", value)
         elif kind == 'bool':
@@ -191,7 +191,7 @@ class Protocol:
         return value
 
     def set_pvid(vlan_num, port):
-        value = (struct.pack("!bh", port, vlan_num))
+        value = struct.pack("!bh", port, vlan_num)
         return value
 
 if __name__ == "__main__":
