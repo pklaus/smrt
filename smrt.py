@@ -1,15 +1,16 @@
 #!/usr/bin/env python
 
-import socket, time, random, argparse, logging
+import socket
+import time
+import random
+import logging
+import argparse
+import netifaces
 
 from protocol import Protocol
 from network import Network
 
-def loglevel(x):
-    try:
-        return getattr(logging, x.upper())
-    except AttributeError:
-        raise argparse.ArgumentError('Select a proper loglevel')
+from loglevel import loglevel
 
 def main():
     logger = logging.getLogger(__name__)
@@ -28,10 +29,6 @@ def main():
     net = Network(args.ip_address, args.host_mac, args.switch_mac)
     actions = Protocol.tp_ids
     net.login(args.username, args.password)
-    # l = net.login_dict(args.username, args.password)
-    # v = Protocol.set_vlan(10, 255, 248, "test2")
-    # l.update({actions["vlan"]: v})
-    # net.set(args.username, args.password, l)
 
     if args.action in actions:
         header, payload = net.query(Protocol.GET, [(actions[args.action], b'')])
