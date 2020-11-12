@@ -137,7 +137,7 @@ $ smrt stats
 ### smrt ports
 
 ```
-$ ./smrt.py --username admin --password admin --host-mac=ba.ff.ee.ff.ac.ee --ip-address=192.168.9.36 --switch-mac 02:02:02:02:02:02 ports
+$ smrt ports
 (4096, 'ports', '01:01:00:01:06:00:00')
 (4096, 'ports', '02:01:00:01:00:00:00')
 (4096, 'ports', '03:01:00:01:00:00:00')

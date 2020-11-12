@@ -31,7 +31,6 @@ def byte2ports(byte):
     return SEP.join(out)
 
 if __name__ == '__main__':
-    #print(ports2byte("12345678"))
-    #a = ports2byte("1,2,5,6,8,12,15")
-    #print(a, byte2ports(a))
+    a = ports2byte("1,2,5,6,8,12,15")
+    print(a, byte2ports(a))
     print(ports2list("1,2"))
