@@ -21,17 +21,9 @@ $ ./discovery.py
 
 ### Multiple interfaces
 
-If more than one interface, this error message gives the list:
+If more than one interface, error message gives the list:
 
 ```
-Traceback (most recent call last):
-  File "./discovery.py", line 67, in <module>
-    main()
-  File "./discovery.py", line 62, in main
-    for header, payload in switches:
-  File "./discovery.py", line 28, in discover_switches
-    raise InterfaceProblem("\n".join(msg))
-__main__.InterfaceProblem:
 Error: more than 1 interface. Use -i or --interface to specify the name
 Interfaces:
     'enp3s0'

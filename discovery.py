@@ -20,8 +20,7 @@ def discover_switches(interface=None):
         if "lo" in interfaces:
             interfaces.remove("lo")
         if len(interfaces) > 1:
-            msg = [""]
-            msg.append("Error: more than 1 interface. Use -i or --interface to specify the name")
+            msg = ["more than 1 interface. Use -i or --interface to specify the name"]
             msg.append("Interfaces:")
             for iface in interfaces:
                 msg.append("    " + repr(iface))
@@ -31,26 +30,28 @@ def discover_switches(interface=None):
     addrs = netifaces.ifaddresses(interface)
     logger.debug("addrs:" + repr(addrs))
     if netifaces.AF_INET not in addrs:
-        raise InterfaceProblem("Error: not AF_INTER address")
+        raise InterfaceProblem("not AF_INTER address")
     if netifaces.AF_LINK not in addrs:
-        raise InterfaceProblem("Error: not AF_LINK address")
+        raise InterfaceProblem("not AF_LINK address")
 
     mac = addrs[netifaces.AF_LINK][0]['addr']
     # take first address of interface
     addr = addrs[netifaces.AF_INET][0]
     if 'broadcast' not in addr or 'addr' not in addr:
-        raise InterfaceProblem("Error: no addr or broadcast for address")
+        raise InterfaceProblem("no addr or broadcast for address")
     ip = addr['addr']
 
     net = Network(ip, mac)
     logger.debug((interface, ip, mac))
     net.send(Protocol.DISCOVERY, {})
+    ret = []
     while True:
         try:
             header, payload = net.receive()
-            yield ip, mac, header, payload
+            ret.append((ip, mac, header, payload))
         except ConnectionProblem:
             break
+    return ret
 
 def main():
     parser = argparse.ArgumentParser()
@@ -59,15 +60,19 @@ def main():
     parser.add_argument('--loglevel', '-l', type=loglevel, default='INFO')
     args = parser.parse_args()
     logging.basicConfig(level=args.loglevel)
-    switches = discover_switches(args.interface)
-    for ip, mac, header, payload in switches:
-        if args.command:
-            p = {x[1]: x[2] for x in payload}
-            cmd = f"./smrt.py --username admin --password admin --host-mac={mac} --ip-address={ip} --switch-mac {p['mac']}"
-            print(cmd)
-        else:
-            print(ip, mac, *payload, sep="\n")
-            print("-"*16)
+    try:
+        switches = discover_switches(args.interface)
+    except InterfaceProblem as e:
+        print("Error:", e)
+    else:
+        for ip, mac, header, payload in switches:
+            if args.command:
+                p = {x[1]: x[2] for x in payload}
+                cmd = f"./smrt.py --username admin --password admin --host-mac={mac} --ip-address={ip} --switch-mac {p['mac']}"
+                print(cmd)
+            else:
+                print(ip, mac, *payload, sep="\n")
+                print("-"*16)
 
 if __name__ == "__main__":
     main()
