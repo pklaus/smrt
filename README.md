@@ -74,10 +74,17 @@ $ ./discovery.py -i enp3s0 -c
 ./smrt.py --username admin --password admin --host-mac=ba.ff.ee.ff.ac.ee --ip-address=192.168.9.36 --switch-mac 02:02:02:02:02:02
 ```
 
+### Alias
+
+After discovery, setting an shell alias reduces command size
+
+```
+$ alias smrt='python ~/smrt/smrt.py --switch-mac 60:E3:27:83:25:3F  --ip-address 192.168.9.36 --host-mac=ba.ff.ee.ff.ac.ee  --username admin --password admin'
+```
+
 ## smrt.py
 
 ### without command gives list of command
-
 
 ```
 $ ./smrt.py --username admin --password admin --host-mac=ba.ff.ee.ff.ac.ee --ip-address=192.168.9.36 --switch-mac 01:01:01:01:01:01
@@ -89,7 +96,7 @@ Note: not all actions are of interest. Some TP-link code (13: "v4", 8707: "vlan_
 ### vlan
 
 ```
-$ ./smrt.py --username admin --password admin --host-mac=ba.ff.ee.ff.ac.ee --ip-address=192.168.9.36 --switch-mac 02:02:02:02:02:02 vlan
+$ smrt vlan # use alias
 
 (8704, 'vlan_enabled', '01')
 (8705, 'vlan', [1, '1,2,3,4,5,6,7,8', '', 'Default_VLAN'])
@@ -101,7 +108,7 @@ $ ./smrt.py --username admin --password admin --host-mac=ba.ff.ee.ff.ac.ee --ip-
 ### pvid
 
 ```
-$ ./smrt.py --username admin --password admin --host-mac=ba.ff.ee.ff.ac.ee --ip-address=192.168.9.36 --switch-mac 02:02:02:02:02:02 pvid 
+$ smrt pvid
 (8706, 'pvid', (1, 90))
 (8706, 'pvid', (2, 90))
 (8706, 'pvid', (3, 90))
@@ -116,7 +123,7 @@ $ ./smrt.py --username admin --password admin --host-mac=ba.ff.ee.ff.ac.ee --ip-
 ### stats
 
 ```
-$ ./smrt.py --username admin --password admin --host-mac=ba.ff.ee.ff.ac.ee --ip-address=192.168.9.36 --switch-mac 02:02:02:02:02:02 stats
+$ smrt stats
 (16384, 'stats', (1, 1, 6, 48, 0, 6356, 14))
 (16384, 'stats', (2, 1, 0, 0, 0, 0, 0))
 (16384, 'stats', (3, 1, 0, 0, 0, 0, 0))
@@ -127,7 +134,7 @@ $ ./smrt.py --username admin --password admin --host-mac=ba.ff.ee.ff.ac.ee --ip-
 (16384, 'stats', (8, 1, 0, 0, 0, 0, 0))
 ```
 
-### ports
+### smrt ports
 
 ```
 $ ./smrt.py --username admin --password admin --host-mac=ba.ff.ee.ff.ac.ee --ip-address=192.168.9.36 --switch-mac 02:02:02:02:02:02 ports
@@ -144,24 +151,15 @@ $ ./smrt.py --username admin --password admin --host-mac=ba.ff.ee.ff.ac.ee --ip-
 
 ### Syntax
 
-`smrt.py` shows parameters but can't change them. `set_vlan.py` permits to set VLAN settings for switches
+`smrt.py` shows parameters and can change them for VLANs if `--vlan` is present
 
-Command syntax is the same than smrt with some new parameters:
+Specific VLAN parameters:
 
-* `--vlan`: vlan number (1-4094)
+* `--vlan`: vlan number (1-4093)
 * `--vlan_name`: acceptable vlan name for TP-Link switch 
 * `--vlan_member`: comma separated list without space of member ports. Ex: 1,2,4
 * `--vlan_tagged`: comma separated list without space of tagged ports. Ex: 1,2
 * `--vlan_pvid`: set pvid to `--vlan` for given ports
-
-### Alias
-
-After discovery, setting an shell alias reduces command size
-
-```
-$ alias smrt='python ~/smrt/smrt.py --switch-mac 60:E3:27:83:25:3F  --ip-address 192.168.9.36 --host-mac=ba.ff.ee.ff.ac.ee  --username admin --password admin'
-$ alias set_vlan='python ~/smrt/set_vlan.py --switch-mac 60:E3:27:83:25:3F  --ip-address 192.168.9.36 --host-mac=ba.ff.ee.ff.ac.ee  --username admin --password admin'
-```
 
 ### Example 1 : add new vlan 120
 
@@ -172,7 +170,7 @@ $ smrt vlan
 (8705, 'vlan', [90, '1,2,3,4,5,6,7,8', '', 'LAN'])
 (8705, 'vlan', [100, '1,2,3', '1', 'vlan_test_1'])
 (8707, 'vlan_filler', ' ')
-$ set_vlan --vlan 120 --vlan_name "vlan_test_2" --vlan_member 1,4,5,6 --vlan_tagged 1
+$ smrt --vlan 120 --vlan_name "vlan_test_2" --vlan_member 1,4,5,6 --vlan_tagged 1
 (8704, 'vlan_enabled', '01')
 (8705, 'vlan', [1, '1,2,3,4,5,6,7,8', '', 'Default_VLAN'])
 (8705, 'vlan', [90, '1,2,3,4,5,6,7,8', '', 'LAN'])
@@ -196,7 +194,7 @@ $ smrt pvid
 (8706, 'pvid', (7, 90))
 (8706, 'pvid', (8, 90))
 (8707, 'vlan_filler', ' ')
-$ set_vlan --vlan 120 --vlan_pvid 5,6
+$ smrt --vlan 120 --vlan_pvid 5,6
 (8706, 'pvid', (1, 90))
 (8706, 'pvid', (2, 90))
 (8706, 'pvid', (3, 90))
@@ -211,7 +209,7 @@ $ set_vlan --vlan 120 --vlan_pvid 5,6
 ### Exemple 3 : remove vlan 120
 
 ```
-$ set_vlan --vlan 120 --delete
+$ smrt --vlan 120 --delete
 (8704, 'vlan_enabled', '01')
 (8705, 'vlan', [1, '1,2,3,4,5,6,7,8', '', 'Default_VLAN'])
 (8705, 'vlan', [90, '1,2,3,4,5,6,7,8', '', 'LAN'])
@@ -236,7 +234,7 @@ $ smrt pvid
 ### Exemple 4 : add new vlan and pvid
 
 ```
-$ set_vlan --vlan 130 --vlan_name "vlan_test_3" --vlan_member 1,4,5,6 --vlan_tagged 1 --vlan_pvid 4,5,6
+$ smrt --vlan 130 --vlan_name "vlan_test_3" --vlan_member 1,4,5,6 --vlan_tagged 1 --vlan_pvid 4,5,6
 (8704, 'vlan_enabled', '01')
 (8705, 'vlan', [1, '1,2,3,4,5,6,7,8', '', 'Default_VLAN'])
 (8705, 'vlan', [90, '1,2,3,4,5,6,7,8', '', 'LAN'])
