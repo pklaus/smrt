@@ -43,7 +43,7 @@ class Network:
         return bytes(int(byte, 16) for byte in mac.split(':'))
 
     def mac_to_str(mac):
-        return a.hex(":")
+        return a.hex()
 
     def send(self, op_code, payload):
         self.sequence_id = (self.sequence_id + 1) % 1000
@@ -52,7 +52,7 @@ class Network:
           'op_code': op_code,
         })
         packet = Protocol.assemble_packet(self.header, payload)
-        logger.debug('Sending Packet: ' + packet.hex(" "))
+        logger.debug('Sending Packet: ' + packet.hex())
         packet = Protocol.encode(packet)
         logger.debug('Sending Header:  ' + str(self.header))
         logger.debug('Sending Payload: ' + str(payload))
@@ -62,7 +62,7 @@ class Network:
         try:
             data, addr = self.rs.recvfrom(1500)
             data = Protocol.decode(data)
-            logger.debug('Receive Packet: ' + data.hex(" "))
+            logger.debug('Receive Packet: ' + data.hex())
             header, payload = Protocol.split(data)
             header, payload = Protocol.interpret_header(header), Protocol.interpret_payload(payload)
             logger.debug('Received Header:  ' + str(header))

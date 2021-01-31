@@ -137,7 +137,6 @@ class Protocol:
             results.append( (
                 dtype,
                 Protocol.ids_tp[dtype][1],
-                # data.hex(sep=" "),
                 Protocol.interpret_value(data, Protocol.ids_tp[dtype][0])
                 )
             )
@@ -164,7 +163,7 @@ class Protocol:
         elif kind == 'ip':
             value = ip_address(value)
         elif kind == 'hex':
-            value = value.hex(sep=":")
+            value = value.hex()
         elif kind == 'action':
             value = "n/a"
         elif kind == 'dec':
