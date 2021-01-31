@@ -30,7 +30,7 @@ def discover_switches(interface=None):
     addrs = netifaces.ifaddresses(interface)
     logger.debug("addrs:" + repr(addrs))
     if netifaces.AF_INET not in addrs:
-        raise InterfaceProblem("not AF_INTER address")
+        raise InterfaceProblem("not AF_INET address")
     if netifaces.AF_LINK not in addrs:
         raise InterfaceProblem("not AF_LINK address")
 
