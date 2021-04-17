@@ -1,6 +1,6 @@
 import struct
 from ipaddress import ip_address
-from binary import byte2ports
+from binary import byte2ports,mac_to_str
 
 class Protocol:
     PACKET_END = b'\xff\xff\x00\x00'
@@ -163,7 +163,7 @@ class Protocol:
         elif kind == 'ip':
             value = ip_address(value)
         elif kind == 'hex':
-            value = value.hex()
+            value = mac_to_str(value)
         elif kind == 'action':
             value = "n/a"
         elif kind == 'dec':

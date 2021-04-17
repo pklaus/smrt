@@ -3,6 +3,7 @@
 import socket, random, logging
 
 from protocol import Protocol
+from binary import byte2ports,mac_to_str,mac_to_bytes
 
 logger = logging.getLogger(__name__)
 
@@ -25,8 +26,8 @@ class Network:
         self.header = Protocol.header["blank"].copy()
         self.header.update({
           'sequence_id': self.sequence_id,
-          'host_mac':   Network.mac_to_bytes(self.host_mac),
-          'switch_mac': Network.mac_to_bytes(self.switch_mac),
+          'host_mac':   mac_to_bytes(self.host_mac),
+          'switch_mac': mac_to_bytes(self.switch_mac),
         })
 
         # Sending socket
@@ -38,12 +39,6 @@ class Network:
         self.rs = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.rs.bind((Network.BROADCAST_ADDR, Network.UDP_RECEIVE_FROM_PORT))
         self.rs.settimeout(0.5)
-
-    def mac_to_bytes(mac):
-        return bytes(int(byte, 16) for byte in mac.split(':'))
-
-    def mac_to_str(mac):
-        return a.hex()
 
     def send(self, op_code, payload):
         self.sequence_id = (self.sequence_id + 1) % 1000

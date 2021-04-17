@@ -30,7 +30,16 @@ def byte2ports(byte):
         byte >>= 1
     return SEP.join(out)
 
+def mac_to_bytes(mac):
+    return bytes(int(byte, 16) for byte in mac.split(':'))
+
+def mac_to_str(mac):
+    return ':'.join(format(s, '02x') for s in mac)
+
+
 if __name__ == '__main__':
     a = ports2byte("1,2,5,6,8,12,15")
     print(a, byte2ports(a))
     print(ports2list("1,2"))
+    m = mac_to_bytes("ba:ff:ee:ff:ac:ee")
+    print(mac_to_str(m))
