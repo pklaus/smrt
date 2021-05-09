@@ -38,7 +38,7 @@ class Network:
         # Receiving socket
         self.rs = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.rs.bind((Network.BROADCAST_ADDR, Network.UDP_RECEIVE_FROM_PORT))
-        self.rs.settimeout(0.5)
+        self.rs.settimeout(10)
 
     def send(self, op_code, payload):
         self.sequence_id = (self.sequence_id + 1) % 1000
