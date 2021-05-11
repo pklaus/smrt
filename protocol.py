@@ -120,8 +120,10 @@ class Protocol:
     encode = decode
 
     def split(data):
-        assert len(data) >= Protocol.header["len"] + len(Protocol.PACKET_END)
-        assert data.endswith(Protocol.PACKET_END)
+        if len(data) < Protocol.header["len"] + len(Protocol.PACKET_END):
+            raise AssertionError('invalid data length')
+        if not data.endswith(Protocol.PACKET_END):
+            raise AssertionError('data without packet end')
         return (data[0:Protocol.header["len"]], data[Protocol.header["len"]:])
 
     def interpret_header(header):
