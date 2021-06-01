@@ -79,6 +79,7 @@ class Protocol:
         12:    ('bool',  'led_status',	0),
         13:    ('bool',  'auto_save',	0),
         14:    ('bool',  'is_factory',	0),
+        15:    ('hex',   'flash_type',  0),
         512:   ('str',   'username',	0),
         514:   ('str',   'password',	0),
         773:   ('bool',  'reboot',	1,	"Reboot the device"),
