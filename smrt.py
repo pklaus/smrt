@@ -3,7 +3,7 @@
 import socket, time, random, argparse, logging
 
 from protocol import Protocol
-from network import Network
+from network import Network, InterfaceProblem
 from binary import ports2byte, ports2list
 
 def loglevel(x):
@@ -16,8 +16,7 @@ def main():
     logger = logging.getLogger(__name__)
     parser = argparse.ArgumentParser()
     parser.add_argument('--switch-mac', '-s')
-    parser.add_argument('--host-mac', )
-    parser.add_argument('--ip-address', '-i')
+    parser.add_argument('--interface', '-i')
     parser.add_argument('--username', '-u')
     parser.add_argument('--password', '-p')
     parser.add_argument('--vlan', type=int)
@@ -31,14 +30,30 @@ def main():
     args = parser.parse_args()
 
     logging.basicConfig(level=args.loglevel)
-    net = Network(args.ip_address, args.host_mac, args.switch_mac)
     actions = Protocol.tp_ids
 
-    if args.action not in Protocol.tp_ids and not args.vlan:
-            print("Actions:" , *actions.keys())
+    if args.action not in Protocol.tp_ids:
+            print("Actions:\n")
+            for action in Protocol.ids_tp.keys():
+                if Protocol.ids_tp[action][2]:
+                    print("%s:%s %s [%s]" %
+                        (Protocol.ids_tp[action][1],
+                        tabout(Protocol.ids_tp[action][1]),
+                        Protocol.ids_tp[action][3],
+                        Protocol.ids_tp[action][0]))
     else:
-        net.login(args.username, args.password)
-        if args.vlan:
+        net = None
+        try:
+            net = Network(args.interface, args.switch_mac)
+        except InterfaceProblem as e:
+            print("Error:", e)
+
+        if net:
+            net.login(args.username, args.password)
+        else:
+            exit(1)
+
+        if args.action == "vlan" and args.vlan:
             if args.vlan_member or args.vlan_tagged or args.delete:
                 if (args.delete):
                     v = Protocol.set_vlan(int(args.vlan), 0, 0, "")
@@ -55,6 +70,12 @@ def main():
         elif args.action in actions:
             header, payload = net.query(Protocol.GET, [(actions[args.action], b'')])
         print(*payload, sep="\n")
+
+def tabout(cmd):
+    # Format help output
+    if len(cmd) < 8:
+      return "\t\t"
+    return "\t"
 
 if __name__ == "__main__":
     main()

@@ -3,46 +3,15 @@
 import random
 import logging
 import argparse
-import netifaces
 
 from protocol import Protocol
-from network import Network, ConnectionProblem
+from network import Network, ConnectionProblem, InterfaceProblem
 from loglevel import loglevel
 
 logger = logging.getLogger(__name__)
 
-class InterfaceProblem(Exception):
-    pass
-
 def discover_switches(interface=None):
-    if interface is None:
-        interfaces = netifaces.interfaces()
-        if "lo" in interfaces:
-            interfaces.remove("lo")
-        if len(interfaces) > 1:
-            msg = ["more than 1 interface. Use -i or --interface to specify the name"]
-            msg.append("Interfaces:")
-            for iface in interfaces:
-                msg.append("    " + repr(iface))
-            raise InterfaceProblem("\n".join(msg))
-
-    settings = []
-    addrs = netifaces.ifaddresses(interface)
-    logger.debug("addrs:" + repr(addrs))
-    if netifaces.AF_INET not in addrs:
-        raise InterfaceProblem("not AF_INET address")
-    if netifaces.AF_LINK not in addrs:
-        raise InterfaceProblem("not AF_LINK address")
-
-    mac = addrs[netifaces.AF_LINK][0]['addr']
-    # take first address of interface
-    addr = addrs[netifaces.AF_INET][0]
-    if 'broadcast' not in addr or 'addr' not in addr:
-        raise InterfaceProblem("no addr or broadcast for address")
-    ip = addr['addr']
-
-    net = Network(ip, mac)
-    logger.debug((interface, ip, mac))
+    net = Network(interface)
     net.send(Protocol.DISCOVERY, {})
     ret = []
     while True:

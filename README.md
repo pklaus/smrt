@@ -51,7 +51,7 @@ ba.ff.ee.ff.ac.ee
 (4, 'ip_addr', IPv4Address('192.168.9.202'))
 (5, 'ip_mask', IPv4Address('255.255.255.0'))
 (6, 'gateway', IPv4Address('192.168.9.1'))
-(13, 'v4', True)
+(13, 'auto_save', True)
 ----------------
 (1, 'type', 'TL-SG108E')
 (2, 'hostname', 'sg108ev1')
@@ -70,8 +70,8 @@ With switch `-c` or `--command`, output gives the syntax for using smrt with rig
 
 ```
 $ ./discovery.py -i enp3s0 -c
-./smrt.py --username admin --password admin --host-mac=ba.ff.ee.ff.ac.ee --ip-address=192.168.9.36 --switch-mac 01:01:01:01:01:01
-./smrt.py --username admin --password admin --host-mac=ba.ff.ee.ff.ac.ee --ip-address=192.168.9.36 --switch-mac 02:02:02:02:02:02
+./smrt.py --username admin --password admin -i enp3s0 --switch-mac 01:01:01:01:01:01
+./smrt.py --username admin --password admin -i enp3s0 --switch-mac 02:02:02:02:02:02
 ```
 
 ### Alias
@@ -79,7 +79,7 @@ $ ./discovery.py -i enp3s0 -c
 After discovery, setting an shell alias reduces command size
 
 ```
-$ alias smrt='python ~/smrt/smrt.py --switch-mac 60:E3:27:83:25:3F  --ip-address 192.168.9.36 --host-mac=ba.ff.ee.ff.ac.ee  --username admin --password admin'
+$ alias smrt='python ~/smrt/smrt.py --switch-mac 60:E3:27:83:25:3F  -i eth0 --username admin --password admin'
 ```
 
 ## smrt.py
@@ -87,11 +87,9 @@ $ alias smrt='python ~/smrt/smrt.py --switch-mac 60:E3:27:83:25:3F  --ip-address
 ### without command gives list of command
 
 ```
-$ ./smrt.py --username admin --password admin --host-mac=ba.ff.ee.ff.ac.ee --ip-address=192.168.9.36 --switch-mac 01:01:01:01:01:01
+$ ./smrt.py --username admin --password admin --interface==eth0 --switch-mac 01:01:01:01:01:01
 Actions: type hostname mac ip_addr ip_mask gateway firmware hardware dhcp num_ports v4 username password save get_token_id igmp_snooping ports trunk mtu_vlan vlan_enabled vlan pvid vlan_filler qos1 qos2 mirror stats loop_prev
 ```
-
-Note: not all actions are of interest. Some TP-link code (13: "v4", 8707: "vlan_filler") correspond to unknown codes but are presents in output, so must be presents in code/command list.
 
 ### vlan
 
@@ -170,7 +168,7 @@ $ smrt vlan
 (8705, 'vlan', [90, '1,2,3,4,5,6,7,8', '', 'LAN'])
 (8705, 'vlan', [100, '1,2,3', '1', 'vlan_test_1'])
 (8707, 'vlan_filler', ' ')
-$ smrt --vlan 120 --vlan_name "vlan_test_2" --vlan_member 1,4,5,6 --vlan_tagged 1
+$ smrt vlan --vlan 120 --vlan_name "vlan_test_2" --vlan_member 1,4,5,6 --vlan_tagged 1
 (8704, 'vlan_enabled', '01')
 (8705, 'vlan', [1, '1,2,3,4,5,6,7,8', '', 'Default_VLAN'])
 (8705, 'vlan', [90, '1,2,3,4,5,6,7,8', '', 'LAN'])
@@ -194,7 +192,7 @@ $ smrt pvid
 (8706, 'pvid', (7, 90))
 (8706, 'pvid', (8, 90))
 (8707, 'vlan_filler', ' ')
-$ smrt --vlan 120 --vlan_pvid 5,6
+$ smrt vlan --vlan 120 --vlan_pvid 5,6
 (8706, 'pvid', (1, 90))
 (8706, 'pvid', (2, 90))
 (8706, 'pvid', (3, 90))
@@ -209,7 +207,7 @@ $ smrt --vlan 120 --vlan_pvid 5,6
 ### Exemple 3 : remove vlan 120
 
 ```
-$ smrt --vlan 120 --delete
+$ smrt vlan --vlan 120 --delete
 (8704, 'vlan_enabled', '01')
 (8705, 'vlan', [1, '1,2,3,4,5,6,7,8', '', 'Default_VLAN'])
 (8705, 'vlan', [90, '1,2,3,4,5,6,7,8', '', 'LAN'])
@@ -234,7 +232,7 @@ $ smrt pvid
 ### Exemple 4 : add new vlan and pvid
 
 ```
-$ smrt --vlan 130 --vlan_name "vlan_test_3" --vlan_member 1,4,5,6 --vlan_tagged 1 --vlan_pvid 4,5,6
+$ smrt vlan --vlan 130 --vlan_name "vlan_test_3" --vlan_member 1,4,5,6 --vlan_tagged 1 --vlan_pvid 4,5,6
 (8704, 'vlan_enabled', '01')
 (8705, 'vlan', [1, '1,2,3,4,5,6,7,8', '', 'Default_VLAN'])
 (8705, 'vlan', [90, '1,2,3,4,5,6,7,8', '', 'LAN'])

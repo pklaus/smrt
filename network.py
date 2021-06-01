@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import netifaces
 import socket, random, logging
 
 from protocol import Protocol
@@ -10,16 +11,18 @@ logger = logging.getLogger(__name__)
 class ConnectionProblem(Exception):
     pass
 
+class InterfaceProblem(Exception):
+    pass
+
 class Network:
 
     BROADCAST_ADDR = "255.255.255.255"
     UDP_SEND_TO_PORT = 29808
     UDP_RECEIVE_FROM_PORT = 29809
 
-    def __init__(self, ip_address, host_mac, switch_mac="00:00:00:00:00:00"):
+    def __init__(self, interface=None, switch_mac="00:00:00:00:00:00"):
         self.switch_mac = switch_mac
-        self.host_mac = host_mac
-        self.ip_address = ip_address
+        self.ip_address, self.host_mac = self.get_interface(interface)
 
         self.sequence_id = random.randint(0, 1000)
 
@@ -33,12 +36,43 @@ class Network:
         # Sending socket
         self.ss = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.ss.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        self.ss.bind((ip_address, Network.UDP_RECEIVE_FROM_PORT))
+        self.ss.bind((self.ip_address, Network.UDP_RECEIVE_FROM_PORT))
 
         # Receiving socket
         self.rs = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.rs.bind((Network.BROADCAST_ADDR, Network.UDP_RECEIVE_FROM_PORT))
         self.rs.settimeout(10)
+
+    def get_interface(self, interface=None):
+        if interface is None:
+            interfaces = netifaces.interfaces()
+            if "lo" in interfaces:
+                interfaces.remove("lo")
+            if len(interfaces) > 1:
+                msg = ["more than 1 interface. Use -i or --interface to specify the name"]
+                msg.append("Interfaces:")
+                for iface in interfaces:
+                    msg.append("    " + repr(iface))
+                raise InterfaceProblem("\n".join(msg))
+
+        settings = []
+        addrs = netifaces.ifaddresses(interface)
+        logger.debug("addrs:" + repr(addrs))
+        if netifaces.AF_INET not in addrs:
+            raise InterfaceProblem("not AF_INET address")
+        if netifaces.AF_LINK not in addrs:
+            raise InterfaceProblem("not AF_LINK address")
+
+        mac = addrs[netifaces.AF_LINK][0]['addr']
+        # take first address of interface
+        addr = addrs[netifaces.AF_INET][0]
+        if 'broadcast' not in addr or 'addr' not in addr:
+            raise InterfaceProblem("no addr or broadcast for address")
+        ip = addr['addr']
+
+        logger.debug("get_interface: %s %s %s " % (interface, ip, mac))
+
+        return ip, mac
 
     def send(self, op_code, payload):
         self.sequence_id = (self.sequence_id + 1) % 1000
