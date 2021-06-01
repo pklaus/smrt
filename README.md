@@ -8,7 +8,7 @@ Supposedly supported switches:
 * TL-SG105E (tested)
 * TL-SG108E (tested)
 * TL-SG108PE
-* TL-SG1016DE
+* TL-SG1016DE (tested)
 * TL-SG1024DE
 
 ## Discover switches
