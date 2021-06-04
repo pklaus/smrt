@@ -67,7 +67,7 @@ class Protocol:
 
     ids_tp = {
         1:     ('str',   'type',	0),
-        2:     ('str',   'hostname',	0),
+        2:     ('str',   'hostname',	1,	"Without arguments, shows switch details"),
         3:     ('hex',   'mac',		0),
         4:     ('ip',    'ip_addr',	0),
         5:     ('ip',    'ip_mask',	0),
