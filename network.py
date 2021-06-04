@@ -21,6 +21,12 @@ class Network:
     UDP_RECEIVE_FROM_PORT = 29809
 
     def __init__(self, interface=None, switch_mac="00:00:00:00:00:00"):
+
+        # Normally, this module will be initialized with the MAC address of the switch we want to talk to
+        # There are however two other modes that might be used:
+        # - Specify MAC address fe:ff:ff:ff:ff:ff to go into broadcast listen mode. We use this to snoop on bidirectional traffic
+        # - Specify MAC address ff:ff:ff:ff:ff:ff to go into "fake switch" mode, where we reply to other clients
+
         self.switch_mac = switch_mac
         self.ip_address, self.host_mac = self.get_interface(interface)
 
@@ -35,13 +41,28 @@ class Network:
 
         # Sending socket
         self.ss = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.ss.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        self.ss.bind((self.ip_address, Network.UDP_RECEIVE_FROM_PORT))
+
+        if switch_mac == "fe:ff:ff:ff:ff:ff" or switch_mac == "ff:ff:ff:ff:ff:ff":
+            self.ss.bind((Network.BROADCAST_ADDR, Network.UDP_SEND_TO_PORT))
+            self.ss.settimeout(10)
+        else:
+            self.ss.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+            self.ss.bind((self.ip_address, Network.UDP_RECEIVE_FROM_PORT))
 
         # Receiving socket
         self.rs = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.rs.bind((Network.BROADCAST_ADDR, Network.UDP_RECEIVE_FROM_PORT))
-        self.rs.settimeout(10)
+
+        if switch_mac == "ff:ff:ff:ff:ff:ff":
+            # This is a signal that we'll be operating in fake switch mode, rather than sending out commands
+            # For this, we need to switch the way that the recieving socket binds, to bind locally instead.
+            self.rs.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+            self.rs.bind((self.ip_address, Network.UDP_SEND_TO_PORT))
+
+        else:
+
+            # Receiving socket
+            self.rs.bind((Network.BROADCAST_ADDR, Network.UDP_RECEIVE_FROM_PORT))
+            self.rs.settimeout(10)
 
     def get_interface(self, interface=None):
         if interface is None:
@@ -85,11 +106,17 @@ class Network:
         packet = Protocol.encode(packet)
         logger.debug('Sending Header:  ' + str(self.header))
         logger.debug('Sending Payload: ' + str(payload))
-        self.ss.sendto(packet, (Network.BROADCAST_ADDR, Network.UDP_SEND_TO_PORT))
+        if self.switch_mac == "ff:ff:ff:ff:ff:ff":
+            self.rs.sendto(packet, (Network.BROADCAST_ADDR, Network.UDP_RECEIVE_FROM_PORT))
+        else:
+            self.ss.sendto(packet, (Network.BROADCAST_ADDR, Network.UDP_SEND_TO_PORT))
+
+    def setHeader(self, header):
+      self.header = header
 
     def receive(self):
-        try:
-            data, addr = self.rs.recvfrom(1500)
+        data = self.recieve_socket(self.rs)
+        if data:
             data = Protocol.decode(data)
             logger.debug('Receive Packet: ' + data.hex())
             header, payload = Protocol.split(data)
@@ -98,8 +125,16 @@ class Network:
             logger.debug('Received Payload: ' + str(payload))
             self.header['token_id'] = header['token_id']
             return header, payload
-        except:
+        else:
             raise ConnectionProblem()
+
+    def recieve_socket(self, socket):
+        data = False
+        try:
+            data, addr = socket.recvfrom(1500)
+        except:
+            return False
+        return data
 
     def query(self, op_code, payload):
         self.send(op_code, payload)
