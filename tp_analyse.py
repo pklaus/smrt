@@ -34,10 +34,10 @@ def main():
         print("Error:", e)
 
     while True:
-        data = net.recieve_socket(net.rs)
+        data = net.receive_socket(net.rs)
         if data:
             show_packet(data)
-        data = net.recieve_socket(net.ss)
+        data = net.receive_socket(net.ss)
         if data:
             show_packet(data)
 

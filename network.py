@@ -115,7 +115,7 @@ class Network:
       self.header = header
 
     def receive(self):
-        data = self.recieve_socket(self.rs)
+        data = self.receive_socket(self.rs)
         if data:
             data = Protocol.decode(data)
             logger.debug('Receive Packet: ' + data.hex())
@@ -128,7 +128,7 @@ class Network:
         else:
             raise ConnectionProblem()
 
-    def recieve_socket(self, socket):
+    def receive_socket(self, socket):
         data = False
         try:
             data, addr = socket.recvfrom(1500)
